@@ -144,15 +144,19 @@ public class NhanVien implements Serializable{
 
 	@Override
 	public String toString() {
-		return "NhanVien [maNV=" + maNV + ", tenNV=" + tenNV + ", gioiTinh=" + gioiTinh + ", SDT=" + SDT + ", chucVu="
+		return "NhanVien [maNV=" + maNV.trim() + ", tenNV=" + tenNV + ", gioiTinh=" + gioiTinh + ", SDT=" + SDT + ", chucVu="
 				+ chucVu + ", luong=" + luong + ", CMND=" + CMND + ", ngaySinh=" + ngaySinh + ", diaChi=" + diaChi
-				+ ", email=" + email + ", trangThai=" + trangThai + ", taiKhoan=" + taiKhoan + "]";
+				+ ", email=" + email + ", trangThai=" + trangThai + ", taiKhoan + [userName= " + taiKhoan.getTenDN() + "password= " + taiKhoan.getMatKhau() + "]";
 	}
 
 	
 
+
+	
+	
+
 	public NhanVien(String maNV, String tenNV, Boolean gioiTinh, String sDT, String chucVu, double luong, String cMND,
-			Date ngaySinh, String diaChi, String email, Boolean trangThai) {
+			Date ngaySinh, String diaChi, String email, Boolean trangThai, TaiKhoan taiKhoan) {
 		super();
 		this.maNV = maNV;
 		this.tenNV = tenNV;
@@ -165,6 +169,7 @@ public class NhanVien implements Serializable{
 		this.diaChi = diaChi;
 		this.email = email;
 		this.trangThai = trangThai;
+		this.taiKhoan = taiKhoan;
 	}
 
 	public NhanVien() {
