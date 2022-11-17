@@ -10,6 +10,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileOutputStream;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -285,7 +286,7 @@ public class FrmChiTietHoaDon extends JFrame {
 		b3.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws RemoteException {
 		// TODO Auto-generated method stub
 		new GUI().setVisible(true);
 	}

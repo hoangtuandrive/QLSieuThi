@@ -8,6 +8,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.Console;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -36,16 +41,22 @@ import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.toedter.calendar.JDateChooser;
 
-public class FrmNhanVien extends javax.swing.JFrame {
+import dao.NhanVienDao;
+import entity.NhanVien;
+import entity.TaiKhoan;
+
+
+public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, MouseListener {
 	private Boolean isQuanLy;
 	private JComboBox<String> cmbChon;
 	private static JComboBox<String> cmbTim;
 	private JButton btnTim;
+	private static   NhanVienDao nhanvien_dao;
 
 	@SuppressWarnings("unchecked")
 	// <editor-fold defaultstate="collapsed" desc="Generated
 	// Code">//GEN-BEGIN:initComponents
-	public JPanel createPanelNhanVien() {
+	public JPanel createPanelNhanVien() throws RemoteException {
 		FlatLightLaf.setup();
 		pntblNhanVien = new javax.swing.JScrollPane();
 		tableNhanVien = new javax.swing.JTable();
@@ -398,8 +409,25 @@ public class FrmNhanVien extends javax.swing.JFrame {
 		tableNhanVien.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tableNhanVien.setDefaultEditor(Object.class, null);
 		tableNhanVien.getTableHeader().setReorderingAllowed(false);
-
-
+		
+		try {
+			nhanvien_dao =  (NhanVienDao) Naming.lookup(FrmDangNhap.IP+"nhanVienDao");
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		docDuLieuDatabaseVaoTable();
+		btnThem.addActionListener(this);
+		btnSua.addActionListener(this);
+		btnXoa.addActionListener(this);
+		btnTim.addActionListener(this);
+		tableNhanVien.addMouseListener(this);
 		return panel;
 	}
 
@@ -435,8 +463,309 @@ public class FrmNhanVien extends javax.swing.JFrame {
 	private javax.swing.JTextField txtTrangThai;
 	private JPanel pnlTimKiem;
 	private static DefaultTableModel modelNhanVien;
+	
+
+	private void emptyTextField() {
+		txtMaNhanVien.setText(null);
+		txtTen.setText(null);
+		txtNgaySinh.setDate(null);
+		txtCMND.setText(null);
+		cmbGioiTinh.setSelectedIndex(0);
+		txtSDT.setText(null);
+		cmbChucVu.setSelectedIndex(0);
+		txtEmail.setText(null);
+		txtDiaChi.setText(null);
+		txtLuong.setText(null);
+	}
+	public static void docDuLieuDatabaseVaoTable() throws RemoteException {
+		List<NhanVien> listNV = new ArrayList<NhanVien>();
+		try {
+			listNV = nhanvien_dao.getTatCaNhanVien();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		DecimalFormat df = new DecimalFormat("#,##0");
+		for (NhanVien nv : listNV) {
+			modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(), nv.getNgaySinh(),
+					nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ", nv.getSDT().trim(),
+					nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(), df.format(nv.getLuong()),
+					nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
+		}
+		
+	}
+	public static void xoaHetDL() {
+		DefaultTableModel dm = (DefaultTableModel) tableNhanVien.getModel();
+		dm.setRowCount(0);
+	}
+	
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		int row = tableNhanVien.getSelectedRow();
+		txtMaNhanVien.setText(modelNhanVien.getValueAt(row, 0).toString());
+		txtTen.setText(modelNhanVien.getValueAt(row, 1).toString());
+		String dateString = modelNhanVien.getValueAt(row, 2).toString();
+		String[] a = dateString.split("-");
+
+//		txtNgaySinh
+//				.setDate(new Date(Integer.parseInt(a[0]) - 1900, Integer.parseInt(a[1]) - 1, Integer.parseInt(a[2])));
+
+		txtCMND.setText(modelNhanVien.getValueAt(row, 3).toString());
+		cmbGioiTinh.setSelectedItem(FrmNhanVien.modelNhanVien.getValueAt(row, 4).toString().trim());
+		txtSDT.setText(modelNhanVien.getValueAt(row, 5).toString());
+		cmbChucVu.setSelectedItem(FrmNhanVien.modelNhanVien.getValueAt(row, 6).toString().trim());
+		txtEmail.setText(modelNhanVien.getValueAt(row, 7).toString());
+		txtDiaChi.setText(modelNhanVien.getValueAt(row, 8).toString());
+		String luong[] = modelNhanVien.getValueAt(row, 9).toString().split(",");
+		String tienLuong = "";
+		for (int i = 0; i < luong.length; i++)
+			tienLuong += luong[i];
+		txtLuong.setText(tienLuong);
+		txtTrangThai.setText(modelNhanVien.getValueAt(row, 10).toString());
+		
+	}
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		Object o = e.getSource();
+		if (o.equals(btnThem)) {
+			if (!validInput()) {
+				return;
+			} else {
+				String maNV;
+				List<NhanVien> listNV = null;
+				try {
+					listNV = nhanvien_dao.getTatCaNhanVien();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				if (listNV.size() == 0)
+					maNV = "NV1001";
+				else {
+					String maNVCuoi = listNV.get(listNV.size() - 1).getMaNV().trim();
+					int layMaSo = Integer.parseInt(maNVCuoi.substring(2, maNVCuoi.length()));
+					maNV = "NV" + (layMaSo + 1);
+				}
+				String tenNV = txtTen.getText();
+				String gioiTinh = cmbGioiTinh.getSelectedItem().toString();
+				String CMND = txtCMND.getText();
+				String SDT = txtSDT.getText();
+				String chucVu = cmbChucVu.getSelectedItem().toString();
+				String diaChi = txtDiaChi.getText();
+				String email = txtEmail.getText();
+				double luong = Double.parseDouble(txtLuong.getText());
+				Date ngaySinh = txtNgaySinh.getDate();
+				java.sql.Date date = new java.sql.Date(ngaySinh.getYear(), ngaySinh.getMonth(), ngaySinh.getDate());
+
+				if (chucVu.equals("Nhân Viên") || chucVu.equals("Quản Lý")) {
+					if (chucVu.equals("Nhân Viên"))
+						if (listNV.size() == 0)
+							maNV = "NV1001";
+						else {
+							String maNVCuoi = listNV.get(listNV.size() - 1).getMaNV().trim();
+							int layMaSo = Integer.parseInt(maNVCuoi.substring(2, maNVCuoi.length()));
+							maNV = "NV" + (layMaSo + 1);
+						}
+					else if (listNV.size() == 0)
+						maNV = "QL1001";
+					else {
+						String maNVCuoi = listNV.get(listNV.size() - 1).getMaNV().trim();
+						int layMaSo = Integer.parseInt(maNVCuoi.substring(2, maNVCuoi.length()));
+						maNV = "QL" + (layMaSo + 1);
+					}
+					TaiKhoan tk = new TaiKhoan(maNV, "123");
+					NhanVien nv = new NhanVien(maNV, tenNV, gioiTinh == "Nam" ? true : false, SDT, chucVu, luong, CMND,
+							date, diaChi, email, true, tk);
+					tk.setMaNV(nv);
+
+					try {
+						nhanvien_dao.addNhanVien(nv);
+						JOptionPane.showMessageDialog(null, "Thanh Cong");
+					} catch (RemoteException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+						JOptionPane.showMessageDialog(null, "That Bai");
+					}
+					//taikhoan_dao.create(tk);
+
+					xoaHetDL();
+					try {
+						docDuLieuDatabaseVaoTable();
+					} catch (RemoteException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
+				}
+				tableNhanVien.getSelectionModel().clearSelection();
+				emptyTextField();
+			}
+		}
+		if (o.equals(btnSua)) {
+			String maNV = txtMaNhanVien.getText();
+			String tenNV = txtTen.getText();
+			String gioiTinh = cmbGioiTinh.getSelectedItem().toString();
+			String CMND = txtCMND.getText();
+			String SDT = txtSDT.getText();
+			String chucVu = cmbChucVu.getSelectedItem().toString();
+			String diaChi = txtDiaChi.getText();
+			String email = txtEmail.getText();
+			double luong = Double.parseDouble(txtLuong.getText());
+			Date ngaySinh = txtNgaySinh.getDate();
+			java.sql.Date date = new java.sql.Date(ngaySinh.getYear(), ngaySinh.getMonth(), ngaySinh.getDate());
+			Boolean trangThai = null;
+			if (txtTrangThai.getText().equalsIgnoreCase("Đã nghỉ việc")) {
+				trangThai = false;
+			} else
+				trangThai = true;
+			if (!validInput()) {
+				return;
+			} else {
+				TaiKhoan tk = new TaiKhoan(maNV, "123");
+				NhanVien nv = new NhanVien(maNV, tenNV, gioiTinh == "Nam" ? true : false, SDT, chucVu, luong, CMND,
+						date, diaChi, email, trangThai, tk);
+				tk.setMaNV(nv);
+				try {
+					nhanvien_dao.updateNV(nv);
+					
+					JOptionPane.showMessageDialog(null, "Thanh Cong");
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "That Bai");
+				}
+				
+				xoaHetDL();
+				try {
+					docDuLieuDatabaseVaoTable();
+					
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				
+				tableNhanVien.getSelectionModel().clearSelection();
+			}
+
+		}
+		if (o.equals(btnXoa)) {
+			int r = tableNhanVien.getSelectedRow();
+			String maNV = modelNhanVien.getValueAt(r, 0).toString();
+			List<NhanVien> listNV = new ArrayList<NhanVien>();
+			try {
+				listNV = nhanvien_dao.getTatCaNhanVien();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			String tenTaiKhoan = "";
+			for (NhanVien nv : listNV) {
+				if (nv.getMaNV().equalsIgnoreCase(maNV)) {
+					tenTaiKhoan = nv.getTaiKhoan().getTenDN();
+					break;
+				}
+			}
+			try {
+				nhanvien_dao.delete(maNV);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+//			taikhoan_dao.delete(tenTaiKhoan);
+			xoaHetDL();
+			try {
+				docDuLieuDatabaseVaoTable();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		
+	}
 
 	// End of variables declaration//GEN-END:variables
+	private boolean validInput() {
+		// TODO Auto-generated method stub
+		String ma = txtMaNhanVien.getText();
+		String ten = txtTen.getText();
+		String sdt = txtSDT.getText();
+		String email = txtEmail.getText();
+		String diaChi = txtDiaChi.getText();
+		String cmnd = txtCMND.getText();
+
+		if (ten.trim().length() > 0) {
+			if (!(ten.matches("[^\\@\\!\\$\\^\\&\\*\\(\\)]+"))) {
+				JOptionPane.showMessageDialog(this, "Tên nhân viên không chứa ký tự đặc biệt", "Lỗi",
+						JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Tên nhân viên không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (sdt.trim().length() > 0) {
+			if (!(sdt.matches(
+					"^(0|\\+84)(\\s|\\.)?((3[2-9])|(5[689])|(7[06-9])|(8[1-689])|(9[0-46-9]))(\\d)(\\s|\\.)?(\\d{3})(\\s|\\.)?(\\d{3})$"))) {
+				JOptionPane.showMessageDialog(this, "Số điện thoại không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Số điện thoại không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (cmnd.trim().length() > 0) {
+			if (!(cmnd.matches("\\d{9}"))) {
+				JOptionPane.showMessageDialog(this, "CMND không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "CMND không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (email.trim().length() > 0) {
+			if (!(email.matches("^[A-Za-z0-9]+[A-Za-z0-9]*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)$"))) {
+				JOptionPane.showMessageDialog(this, "Email không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Email không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (diaChi.trim().length() > 0) {
+			if (!(diaChi.matches("[^\\@\\!\\$\\^\\&\\*\\(\\)]+"))) {
+				JOptionPane.showMessageDialog(this, "Địa chỉ không chứa ký tự đặc biệt", "Lỗi",
+						JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Địa chỉ không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		return true;
+	}
 
 
 }

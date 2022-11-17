@@ -9,6 +9,7 @@ import java.awt.Insets;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -46,6 +47,10 @@ import com.toedter.calendar.JDateChooser;
 
 public class FrmBanHang extends JFrame {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JTextField txtTim;
 	private JButton btnTim;
 	private static DefaultTableModel modelHangHoa;
@@ -389,7 +394,7 @@ public class FrmBanHang extends JFrame {
 		return p;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws RemoteException {
 		// TODO Auto-generated method stub
 		new GUI().setVisible(true);
 	}

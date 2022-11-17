@@ -4,17 +4,23 @@ package entity;
 
 import java.io.Serializable;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+
 
 @Entity
 @IdClass(ChiTietHDPK.class)
-public class ChiTietHoaDon {
+public class ChiTietHoaDon implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2663768720982157146L;
 	@Id
 	@ManyToOne
 	@JoinColumn(name = "maHD",columnDefinition = "nchar(20)")
@@ -69,6 +75,10 @@ public class ChiTietHoaDon {
 		this.soLuong = soLuong;
 		this.giaTien = giaTien;
 		this.thanhTien = thanhTien;
+	}
+	public ChiTietHoaDon() {
+		super();
+		// TODO Auto-generated constructor stub
 	}
 
 	

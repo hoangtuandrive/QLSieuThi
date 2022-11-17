@@ -2,12 +2,13 @@ package entity;
 
 import java.io.Serializable;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapsId;
+import javax.persistence.OneToOne;
+
 
 @Entity
 public class TaiKhoan implements Serializable {
@@ -17,7 +18,7 @@ public class TaiKhoan implements Serializable {
 	 */
 	private static final long serialVersionUID = -7299490460395928304L;
 	@Id
-	@Column(columnDefinition = "nchar(20)")
+
 	private String tenDN;
 	@OneToOne
 	@MapsId

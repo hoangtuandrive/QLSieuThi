@@ -2,15 +2,17 @@ package entity;
 
 import java.io.Serializable;
 
-import jakarta.persistence.Embeddable;
+import javax.persistence.Embeddable;
+
+
 
 @Embeddable
 public class ChiTietHDPK implements Serializable{
-	
+
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -5046369766747249148L;
+	private static final long serialVersionUID = 8841167962151832842L;
 	private String maHoaDon;
 	private String maSP;
 	@Override

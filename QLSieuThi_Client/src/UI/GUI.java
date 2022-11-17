@@ -14,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -42,7 +43,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 	private JLabel lblTenNhanVien;
 	private JLabel txtTenNhanVien;
 
-	public GUI() {
+	public GUI() throws RemoteException {
 		FlatLightLaf.setup();
 		setTitle("QUẢN LÝ SIÊU THỊ");
 //		setResizable(false);
@@ -56,8 +57,9 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 
 	/**
 	 * create a JTabbedPane contain tabs
+	 * @throws RemoteException 
 	 */
-	public JTabbedPane createTabbedPane() {
+	public JTabbedPane createTabbedPane() throws RemoteException {
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.LEFT);
 		tabbedPane.setUI(new BasicTabbedPaneUI() {
 			@Override
@@ -246,7 +248,12 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 		}
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				new GUI().setVisible(true);
+				try {
+					new GUI().setVisible(true);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
 	}

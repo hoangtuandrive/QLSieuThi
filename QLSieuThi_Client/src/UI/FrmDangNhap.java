@@ -34,7 +34,7 @@ public class FrmDangNhap extends JFrame {
 
 	private JLabel lblMK;
 	private JLabel lblTDN;
-
+	public static String IP = "rmi://192.168.1.35:9999/";
 	public FrmDangNhap() {
 		FlatLightLaf.setup();
 		
