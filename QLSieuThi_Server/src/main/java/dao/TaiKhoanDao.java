@@ -1,15 +1,10 @@
 package dao;
 
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
-import entity.NhanVien;
 import entity.TaiKhoan;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
-import util.MyEmFactory;
 
-public class TaiKhoanDao {
-	private EntityManager em;
-	public TaiKhoanDao() {
-		em= MyEmFactory.getIntance().getEntityManagerFactory().createEntityManager();		
-	}
+public interface TaiKhoanDao extends Remote{
+	public boolean AddTaiKhoan(TaiKhoan tk) throws RemoteException;
 }
