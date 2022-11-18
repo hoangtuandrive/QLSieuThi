@@ -42,6 +42,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.toedter.calendar.JDateChooser;
 
 import dao.NhanVienDao;
+import dao.TaiKhoanDao;
 import entity.NhanVien;
 import entity.TaiKhoan;
 
@@ -51,8 +52,8 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 	private JComboBox<String> cmbChon;
 	private static JComboBox<String> cmbTim;
 	private JButton btnTim;
-	private static   NhanVienDao nhanvien_dao;
-
+	private NhanVienDao nhanvien_dao;
+	private TaiKhoanDao tk_dao;
 	@SuppressWarnings("unchecked")
 	// <editor-fold defaultstate="collapsed" desc="Generated
 	// Code">//GEN-BEGIN:initComponents
@@ -412,6 +413,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		
 		try {
 			nhanvien_dao =  (NhanVienDao) Naming.lookup(FrmDangNhap.IP+"nhanVienDao");
+			tk_dao =   (TaiKhoanDao) Naming.lookup(FrmDangNhap.IP+"taiKhoanDao");
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -422,6 +424,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	
 		docDuLieuDatabaseVaoTable();
 		btnThem.addActionListener(this);
 		btnSua.addActionListener(this);
@@ -477,11 +480,11 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		txtDiaChi.setText(null);
 		txtLuong.setText(null);
 	}
-	public static void docDuLieuDatabaseVaoTable() throws RemoteException {
+	public  void docDuLieuDatabaseVaoTable() throws RemoteException {
 		List<NhanVien> listNV = new ArrayList<NhanVien>();
 		try {
 			listNV = nhanvien_dao.getTatCaNhanVien();
-		} catch (RemoteException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -553,7 +556,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 				return;
 			} else {
 				String maNV;
-				List<NhanVien> listNV = null;
+				List<NhanVien> listNV = new ArrayList<NhanVien>();
 				try {
 					listNV = nhanvien_dao.getTatCaNhanVien();
 				} catch (RemoteException e1) {
@@ -690,11 +693,12 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 			}
 			try {
 				nhanvien_dao.delete(maNV);
+				tk_dao.Delete(maNV);
 			} catch (RemoteException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-//			taikhoan_dao.delete(tenTaiKhoan);
+			
 			xoaHetDL();
 			try {
 				docDuLieuDatabaseVaoTable();

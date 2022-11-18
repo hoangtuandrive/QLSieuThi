@@ -90,7 +90,7 @@ public class SanPham implements Serializable{
 	@Override
 	public String toString() {
 		return "SanPham [maSP=" + maSP + ", tenSP=" + tenSP + ", loaiHang=" + loaiHang + ", nhaCungCap=" + nhaCungCap
-				+ ", donGia=" + donGia + ", soLuong=" + soLuong + ", cthd=" + cthd + "]";
+				+ ", donGia=" + donGia + ", soLuong=" + soLuong + "]";
 	}
 
 	public SanPham(String maSP, String tenSP, String loaiHang, String nhaCungCap, double donGia, int soLuong) {
@@ -101,6 +101,11 @@ public class SanPham implements Serializable{
 		this.nhaCungCap = nhaCungCap;
 		this.donGia = donGia;
 		this.soLuong = soLuong;
+	}
+	
+	public SanPham(String maSP) {
+		super();
+		this.maSP = maSP;
 	}
 
 	public SanPham() {

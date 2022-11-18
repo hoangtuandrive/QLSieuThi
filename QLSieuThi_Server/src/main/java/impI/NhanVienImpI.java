@@ -46,6 +46,7 @@ public class NhanVienImpI extends UnicastRemoteObject implements NhanVienDao {
 	}
 	@Override
 	public NhanVien getNhanVienById(String ma) throws RemoteException {
+		em.clear();
 		return em.createQuery("select nv from NhanVien nv where nv.maNV = :x", NhanVien.class).setParameter("x", ma)
 				.getSingleResult();
 	}
@@ -84,6 +85,7 @@ public class NhanVienImpI extends UnicastRemoteObject implements NhanVienDao {
 		try {
 			tr.begin();
 			String sql = "select * from NhanVien";
+			em.clear();
 			list=em.createNativeQuery(sql, NhanVien.class).getResultList();
 			tr.commit();
 			return list;
@@ -92,5 +94,7 @@ public class NhanVienImpI extends UnicastRemoteObject implements NhanVienDao {
 		}
 		return null;
 	}
+
+	
 
 }

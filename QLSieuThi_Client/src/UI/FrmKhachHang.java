@@ -8,6 +8,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -35,14 +39,18 @@ import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.toedter.calendar.JDateChooser;
 
+import dao.KhachHangDao;
+import entity.KhachHang;
 
-public class FrmKhachHang extends javax.swing.JFrame {
+
+public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,MouseListener {
 
 	private JComboBox<String> cmbChon;
 	private static JComboBox<String> cmbTim;
 	private JButton btnTim;
-
-	public JPanel createPanelKhachHang() {
+	private KhachHangDao kh_dao;
+	
+	public JPanel createPanelKhachHang() throws RemoteException{
 		FlatLightLaf.setup();
 		pntblKhachHang = new javax.swing.JScrollPane();
 		tableKhachHang = new javax.swing.JTable();
@@ -345,6 +353,28 @@ public class FrmKhachHang extends javax.swing.JFrame {
 
 		
 		pack();
+		
+		try {
+			kh_dao= (KhachHangDao) Naming.lookup(FrmDangNhap.IP+"khachHangDao");
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		docDuLieuDatabaseVaoTable();
+		btnThem.addActionListener(this);
+		btnSua.addActionListener(this);
+		btnXoa.addActionListener(this);
+		btnTim.addActionListener(this);
+		tableKhachHang.addMouseListener(this);
+		
+		
 		return panel;
 
 	}// </editor-fold>//GEN-END:initComponents
@@ -425,4 +455,220 @@ public class FrmKhachHang extends javax.swing.JFrame {
 
 	private static DefaultTableModel modelKhachHang;
 	private static JTable tableKhachHang;
+
+	private void emptyTextField() {
+		txtMaKhachHang.setText(null);
+		txtTenKhachHang.setText(null);
+		txtNgaySinh.setDate(null);
+		txtCMND.setText(null);
+		cmbGioiTinh.setSelectedIndex(0);
+		txtSDT.setText(null);
+		txtEmail.setText(null);
+		txtDiaChi.setText(null);
+	}
+	public  void docDuLieuDatabaseVaoTable() throws RemoteException {
+		List<KhachHang> listKH = new ArrayList<KhachHang>();
+		listKH = kh_dao.getTatCaKhachHang();
+		for (KhachHang kh : listKH) {
+			modelKhachHang.addRow(new Object[] { kh.getMaKH().trim(), kh.getTenKH().trim(), kh.getNgaySinh(),
+					kh.getCMND().trim(), kh.isGioiTinh() == true ? "Nam" : "Nữ", kh.getSDT().trim(), 
+					kh.getEmail().trim(), kh.getDiaChi().trim()});
+		}
+	}
+
+	public static void xoaHetDL() {
+		DefaultTableModel dm = (DefaultTableModel) tableKhachHang.getModel();
+		dm.setRowCount(0);
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		// TODO Auto-generated method stub
+		int row = tableKhachHang.getSelectedRow();
+		txtMaKhachHang.setText(modelKhachHang.getValueAt(row, 0).toString());
+		txtTenKhachHang.setText(modelKhachHang.getValueAt(row, 1).toString());
+		String dateString = modelKhachHang.getValueAt(row, 2).toString();
+//		String[] a = dateString.split("-");
+//		txtNgaySinh
+//				.setDate(new Date(Integer.parseInt(a[0]) - 1900, Integer.parseInt(a[1]) - 1, Integer.parseInt(a[2])));
+		txtCMND.setText(modelKhachHang.getValueAt(row, 3).toString());
+		cmbGioiTinh.setSelectedItem(modelKhachHang.getValueAt(row, 4).toString().trim());
+		txtSDT.setText(modelKhachHang.getValueAt(row, 5).toString());
+		txtEmail.setText(modelKhachHang.getValueAt(row, 6).toString());
+		txtDiaChi.setText(modelKhachHang.getValueAt(row, 7).toString());
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		Object o = e.getSource();
+		if (o.equals(btnThem)) {
+			if (!validInput()) {
+				return;
+			} else {
+				String maKH;
+				List<KhachHang> listKH = null;
+				try {
+					listKH = kh_dao.getTatCaKhachHang();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				if (listKH.size() == 0)
+					maKH = "KH1001";
+				else {
+					String maKHCuoi = listKH.get(listKH.size() - 1).getMaKH().trim();
+					int layMaSo = Integer.parseInt(maKHCuoi.substring(2, maKHCuoi.length()));
+					maKH = "KH" + (layMaSo + 1);
+				}
+				String tenKH = txtTenKhachHang.getText();
+				String gioiTinh = cmbGioiTinh.getSelectedItem().toString();
+				String CMND = txtCMND.getText();
+				String SDT = txtSDT.getText();
+				String diaChi = txtDiaChi.getText();
+				String email = txtEmail.getText();
+				Date ngaySinh = txtNgaySinh.getDate();
+				java.sql.Date date = new java.sql.Date(ngaySinh.getYear(), ngaySinh.getMonth(), ngaySinh.getDate());
+
+				KhachHang kh = new KhachHang(maKH, tenKH, gioiTinh == "Nam" ? true : false, SDT, CMND, date, diaChi,
+						email);
+				try {
+					kh_dao.create(kh);
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+				xoaHetDL();
+				try {
+					docDuLieuDatabaseVaoTable();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+			tableKhachHang.getSelectionModel().clearSelection();
+			emptyTextField();
+			//FrmBanHang.docDuLieuVaoCmbSDT();
+		}
+		if (o.equals(btnSua)) {
+			String maKH = txtMaKhachHang.getText();
+			String tenKH = txtTenKhachHang.getText();
+			String gioiTinh = cmbGioiTinh.getSelectedItem().toString();
+			String CMND = txtCMND.getText();
+			String SDT = txtSDT.getText();
+			String diaChi = txtDiaChi.getText();
+			String email = txtEmail.getText();
+
+			Date ngaySinh = txtNgaySinh.getDate();
+			java.sql.Date date = new java.sql.Date(ngaySinh.getYear(), ngaySinh.getMonth(), ngaySinh.getDate());
+			if(!validInput()) {
+				return;
+			}
+			else {
+				KhachHang kh = new KhachHang(maKH, tenKH, gioiTinh == "Nam" ? true : false, SDT, CMND, date, diaChi, email);
+
+				try {
+					kh_dao.update(kh);
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+				xoaHetDL();
+				try {
+					docDuLieuDatabaseVaoTable();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				tableKhachHang.getSelectionModel().clearSelection();
+				//FrmBanHang.docDuLieuVaoCmbSDT();
+			}	
+		}
+		
+	}
+	private boolean validInput() {
+		// TODO Auto-generated method stub
+		String maKH = txtMaKhachHang.getText();
+		String tenKH = txtTenKhachHang.getText();
+		String sdt = txtSDT.getText();
+		String email = txtEmail.getText();
+		String diaChi = txtDiaChi.getText();
+		String cmnd = txtCMND.getText();
+		
+		if (tenKH.trim().length() > 0) {
+			if (!(tenKH.matches("[^\\@\\!\\$\\^\\&\\*\\(\\)]+"))) {
+				JOptionPane.showMessageDialog(this, "Tên khách hàng không chứa ký tự đặc biệt", "Lỗi",
+						JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Tên khách hàng không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (sdt.trim().length() > 0) {
+			if (!(sdt.matches(
+					"^(0|\\+84)(\\s|\\.)?((3[2-9])|(5[689])|(7[06-9])|(8[1-689])|(9[0-46-9]))(\\d)(\\s|\\.)?(\\d{3})(\\s|\\.)?(\\d{3})$"))) {
+				JOptionPane.showMessageDialog(this, "Số điện thoại không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Số điện thoại không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (cmnd.trim().length() > 0) {
+			if (!(cmnd.matches("\\d{9}"))) {
+				JOptionPane.showMessageDialog(this, "CMND không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "CMND không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (email.trim().length() > 0) {
+			if (!(email.matches("^[A-Za-z0-9]+[A-Za-z0-9]*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)$"))) {
+				JOptionPane.showMessageDialog(this, "Email không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Email không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (diaChi.trim().length() > 0) {
+			if (!(diaChi.matches("[^\\@\\!\\$\\^\\&\\*\\(\\)]+"))) {
+				JOptionPane.showMessageDialog(this, "Địa chỉ không chứa ký tự đặc biệt", "Lỗi",
+						JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Địa chỉ không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		return true;
+	}
 }
