@@ -137,7 +137,7 @@ public class FrmChiTietHoaDon extends JFrame {
 		// txtBanHangHoa.setForeground(Color.BLACK);
 		txtBanHangHoa.setBorder(null);
 		txtBanHangHoa.setBackground(null);
-		txtBanHangHoa.setText("Hóa Đơn Bán Hàng Hóa");
+		txtBanHangHoa.setText("Hóa Đơn Bán Sản Phẩm");
 		txtBanHangHoa.setFont(new Font("Arial", Font.BOLD, 20));
 		txtBanHangHoa.setForeground(Color.black);
 
@@ -177,7 +177,7 @@ public class FrmChiTietHoaDon extends JFrame {
 		txtThanhTien.setBackground(null);
 		txtThanhTien.setText(null);
 
-		String[] colHeader1 = { "Mã Hàng Hóa", "Tên Hàng Hóa", "Loại Hàng", "Nhà Cung Cấp", "Đơn Giá", "Số Lượng",
+		String[] colHeader1 = { "Mã Sản Phẩm", "Tên Sản Phẩm", "Loại Hàng", "Nhà Cung Cấp", "Đơn Giá", "Số Lượng",
 				"Thành Tiền" };
 		modelCTHD = new DefaultTableModel(colHeader1, 0);
 		JScrollPane tblscroll = new JScrollPane(tblCTHD);
@@ -198,6 +198,7 @@ public class FrmChiTietHoaDon extends JFrame {
 		tblCTHD.setGridColor(getBackground());
 		tblCTHD.setRowHeight(tblCTHD.getRowHeight() + 20);
 		tblCTHD.setSelectionBackground(new Color(255, 255, 128));
+		tblCTHD.setSelectionForeground(Color.BLACK);
 		tblCTHD.setPreferredScrollableViewportSize(new Dimension(650, 350));
 		JTableHeader tableHeader = tblCTHD.getTableHeader();
 		tableHeader.setBackground(new Color(0, 148, 224));

@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.SortedSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -51,7 +52,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 	private JComboBox<String> cmbChon;
 	private static JComboBox<String> cmbTim;
 	private JButton btnTim;
-	private NhanVienDao nhanvien_dao;
+	private static NhanVienDao nhanvien_dao;
 	private TaiKhoanDao tk_dao;
 
 	@SuppressWarnings("unchecked")
@@ -122,6 +123,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		tableNhanVien.setGridColor(getBackground());
 		tableNhanVien.setRowHeight(tableNhanVien.getRowHeight() + 20);
 		tableNhanVien.setSelectionBackground(new Color(255, 255, 128));
+		tableNhanVien.setSelectionForeground(Color.BLACK);
 		JTableHeader tableHeader = tableNhanVien.getTableHeader();
 		tableHeader.setBackground(new Color(0, 148, 224));
 		tableHeader.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -364,8 +366,8 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 
 		pack();
 
-		// txtMaNhanVien.setEditable(false);
-		// txtTrangThai.setEditable(false);
+		 txtMaNhanVien.setEditable(false);
+		 txtTrangThai.setEditable(false);
 
 		tableNhanVien.getColumnModel().getColumn(1).setPreferredWidth(110);
 
@@ -430,6 +432,10 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		btnXoa.addActionListener(this);
 		btnTim.addActionListener(this);
 		tableNhanVien.addMouseListener(this);
+		docMaNhanVienVaoCmbTim();
+		cmbChon.addActionListener(this);
+		cmbTim.addActionListener(this);
+		btnTim.addActionListener(this);
 		return panel;
 	}
 
@@ -480,6 +486,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 	}
 
 	public void docDuLieuDatabaseVaoTable() throws RemoteException {
+		SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
 		List<NhanVien> listNV = new ArrayList<NhanVien>();
 		try {
 			listNV = nhanvien_dao.getTatCaNhanVien();
@@ -490,10 +497,10 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 
 		DecimalFormat df = new DecimalFormat("#,##0");
 		for (NhanVien nv : listNV) {
-			modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(), nv.getNgaySinh(),
-					nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ", nv.getSDT().trim(),
-					nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(), df.format(nv.getLuong()),
-					nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
+			modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(),
+					format1.format(nv.getNgaySinh()), nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ",
+					nv.getSDT().trim(), nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(),
+					df.format(nv.getLuong()), nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
 		}
 
 	}
@@ -511,10 +518,9 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		txtTen.setText(modelNhanVien.getValueAt(row, 1).toString());
 		String dateString = modelNhanVien.getValueAt(row, 2).toString();
 		String[] a = dateString.split("-");
-
-		// txtNgaySinh
-		// .setDate(new Date(Integer.parseInt(a[0]) - 1900, Integer.parseInt(a[1]) - 1,
-		// Integer.parseInt(a[2])));
+		 txtNgaySinh
+		 .setDate(new Date(Integer.parseInt(a[0]) - 1900, Integer.parseInt(a[1]) - 1,
+		 Integer.parseInt(a[2])));
 
 		txtCMND.setText(modelNhanVien.getValueAt(row, 3).toString());
 		cmbGioiTinh.setSelectedItem(FrmNhanVien.modelNhanVien.getValueAt(row, 4).toString().trim());
@@ -565,7 +571,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 				String maNV;
 				List<NhanVien> listNV = new ArrayList<NhanVien>();
 				try {
-					listNV = nhanvien_dao.getTatCaNhanVien();
+					listNV = nhanvien_dao.getTatCaNhanVienKhiAdd();
 				} catch (RemoteException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -617,7 +623,12 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 						e1.printStackTrace();
 						JOptionPane.showMessageDialog(null, "That Bai");
 					}
-					// taikhoan_dao.create(tk);
+					try {
+						tk_dao.create(tk);
+					} catch (RemoteException e2) {
+						// TODO Auto-generated catch block
+						e2.printStackTrace();
+					}
 
 					xoaHetDL();
 					try {
@@ -699,7 +710,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 			}
 			try {
 				nhanvien_dao.delete(maNV);
-				tk_dao.Delete(maNV);
+				tk_dao.delete(maNV);
 			} catch (RemoteException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -714,6 +725,321 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 			}
 		}
 
+		if (o.equals(cmbChon)) {
+			if (cmbChon.getSelectedIndex() == 0) {
+				try {
+					docMaNhanVienVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 1) {
+				try {
+					docTenNhanVienVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 2) {
+				try {
+					docGioiTinhNhanVienVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 3) {
+				try {
+					docSDTNhanVienVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 4) {
+				try {
+					docChucVuNhanVienVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 5) {
+				try {
+					docLuongNhanVienVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 6) {
+				try {
+					docCMNDNhanVienVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 7) {
+				try {
+					docNgaySinhNhanVienVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 8) {
+				try {
+					docDiaChiNhanVienVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 9) {
+				try {
+					docEmailNhanVienVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 10) {
+				try {
+					docTrangThaiNhanVienVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		}
+		if (o.equals(btnTim)) {
+			DefaultTableModel model = (DefaultTableModel) tableNhanVien.getModel();
+			model.setRowCount(0);
+			DecimalFormat df = new DecimalFormat("#,##0");
+			if (cmbTim.getSelectedIndex() == 0) {
+				try {
+					docDuLieuDatabaseVaoTable();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 0) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				List<NhanVien> list;
+				try {
+					list = nhanvien_dao.getTatCaNhanVien();
+					for (NhanVien nv : list) {
+						if (nv.getMaNV().trim().equals(tim.trim())) {
+							SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+							modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(),
+									format1.format(nv.getNgaySinh()), nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ",
+									nv.getSDT().trim(), nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(),
+									df.format(nv.getLuong()), nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 1) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				List<NhanVien> list;
+				try {
+					list = nhanvien_dao.getTatCaNhanVien();
+					for (NhanVien nv : list) {
+						if (nv.getTenNV().trim().equals(tim.trim())) {
+							SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+							modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(),
+									format1.format(nv.getNgaySinh()), nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ",
+									nv.getSDT().trim(), nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(),
+									df.format(nv.getLuong()), nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 2) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				Boolean b = null;
+				if (tim == "Nam") {
+					b = true;
+				} else if (tim == "Nữ") {
+					b = false;
+				}
+				List<NhanVien> list;
+				try {
+					list = nhanvien_dao.getTatCaNhanVien();
+					for (NhanVien nv : list) {
+						if (nv.getGioiTinh().equals(b)) {
+							SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+							modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(),
+									format1.format(nv.getNgaySinh()), nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ",
+									nv.getSDT().trim(), nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(),
+									df.format(nv.getLuong()), nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			
+			} else if (cmbChon.getSelectedIndex() == 3) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				List<NhanVien> list;
+				try {
+					list = nhanvien_dao.getTatCaNhanVien();
+					for (NhanVien nv : list) {
+						if (nv.getSDT().trim().equals(tim.trim())) {
+							SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+							modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(),
+									format1.format(nv.getNgaySinh()), nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ",
+									nv.getSDT().trim(), nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(),
+									df.format(nv.getLuong()), nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			} else if (cmbChon.getSelectedIndex() == 4) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				List<NhanVien> list;
+				try {
+					list = nhanvien_dao.getTatCaNhanVien();
+					for (NhanVien nv : list) {
+						if (nv.getChucVu().trim().equals(tim.trim())) {
+							SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+							modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(),
+									format1.format(nv.getNgaySinh()), nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ",
+									nv.getSDT().trim(), nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(),
+									df.format(nv.getLuong()), nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			} else if (cmbChon.getSelectedIndex() == 5) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				double d = Double.parseDouble(tim.replaceAll(",", "").trim());
+				List<NhanVien> list;
+				try {
+					list = nhanvien_dao.getTatCaNhanVien();
+					for (NhanVien nv : list) {
+						if (nv.getLuong() == d) {
+							SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+							modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(),
+									format1.format(nv.getNgaySinh()), nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ",
+									nv.getSDT().trim(), nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(),
+									df.format(nv.getLuong()), nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			} else if (cmbChon.getSelectedIndex() == 6) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				List<NhanVien> list;
+				try {
+					list = nhanvien_dao.getTatCaNhanVien();
+					for (NhanVien nv : list) {
+						if (nv.getCMND().trim().equals(tim.trim())) {
+							SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+							modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(),
+									format1.format(nv.getNgaySinh()), nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ",
+									nv.getSDT().trim(), nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(),
+									df.format(nv.getLuong()), nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			} else if (cmbChon.getSelectedIndex() == 7) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				String[] a = tim.split("-");
+				Date d = new Date(Integer.parseInt(a[0]) - 1900, Integer.parseInt(a[1]) - 1, Integer.parseInt(a[2]));
+				List<NhanVien> list;
+				try {
+					list = nhanvien_dao.getTatCaNhanVien();
+					for (NhanVien nv : list) {
+						if (nv.getNgaySinh().compareTo(d)==0) {
+							SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+							modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(),
+									format1.format(nv.getNgaySinh()), nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ",
+									nv.getSDT().trim(), nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(),
+									df.format(nv.getLuong()), nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			} else if (cmbChon.getSelectedIndex() == 8) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				List<NhanVien> list;
+				try {
+					list = nhanvien_dao.getTatCaNhanVien();
+					for (NhanVien nv : list) {
+						if (nv.getDiaChi().trim().equals(tim.trim())) {
+							SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+							modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(),
+									format1.format(nv.getNgaySinh()), nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ",
+									nv.getSDT().trim(), nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(),
+									df.format(nv.getLuong()), nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			} else if (cmbChon.getSelectedIndex() == 9) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				List<NhanVien> list;
+				try {
+					list = nhanvien_dao.getTatCaNhanVien();
+					for (NhanVien nv : list) {
+						if (nv.getEmail().trim().equals(tim.trim())) {
+							SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+							modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(),
+									format1.format(nv.getNgaySinh()), nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ",
+									nv.getSDT().trim(), nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(),
+									df.format(nv.getLuong()), nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			
+			} else if (cmbChon.getSelectedIndex() == 10) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				Boolean b = null;
+				if (tim == "Đang làm") {
+					b = true;
+				} else if (tim == "Đã nghỉ việc") {
+					b = false;
+				}
+				List<NhanVien> list;
+				try {
+					list = nhanvien_dao.getTatCaNhanVien();
+					for (NhanVien nv : list) {
+						if (nv.getTrangThai().equals(b)) {
+							SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+							modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(),
+									format1.format(nv.getNgaySinh()), nv.getCMND().trim(), nv.getGioiTinh() == true ? "Nam" : "Nữ",
+									nv.getSDT().trim(), nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(),
+									df.format(nv.getLuong()), nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			
+			}
+		}
 	}
 
 	// End of variables declaration//GEN-END:variables
@@ -777,4 +1103,104 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		return true;
 	}
 
+	public static void docMaNhanVienVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = nhanvien_dao.getTatCaMaNhanVien();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docTenNhanVienVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = nhanvien_dao.getTatCaTenNhanVien();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docGioiTinhNhanVienVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<Boolean> list = nhanvien_dao.getTatCaGioiTinhNhanVien();
+		cmbTim.addItem("");
+		for (Boolean s : list) {
+			cmbTim.addItem(s == true ? "Nam" : "Nữ");
+		}
+	}
+
+	public static void docSDTNhanVienVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = nhanvien_dao.getTatCaSDTNhanVien();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docChucVuNhanVienVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = nhanvien_dao.getTatCaChucVuNhanVien();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docLuongNhanVienVaoCmbTim() throws RemoteException {
+		DecimalFormat df = new DecimalFormat("#,##0");
+		cmbTim.removeAllItems();
+		SortedSet<Double> list = nhanvien_dao.getTatCaLuongNhanVien();
+		cmbTim.addItem("");
+		for (Double s : list) {
+			cmbTim.addItem(df.format(s));
+		}
+	}
+
+	public static void docCMNDNhanVienVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = nhanvien_dao.getTatCaCMNDNhanVien();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docNgaySinhNhanVienVaoCmbTim() throws RemoteException {
+		SimpleDateFormat date = new SimpleDateFormat("yyy-MM-dd");
+		cmbTim.removeAllItems();
+		SortedSet<Date> list = nhanvien_dao.getTatCaNgaySinhNhanVien();
+		cmbTim.addItem("");
+		for (Date s : list) {
+			cmbTim.addItem(date.format(s));
+		}
+	}
+
+	public static void docDiaChiNhanVienVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = nhanvien_dao.getTatCaDiaChiNhanVien();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docEmailNhanVienVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = nhanvien_dao.getTatCaEmailNhanVien();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docTrangThaiNhanVienVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<Boolean> list = nhanvien_dao.getTatCaTrangThaiNhanVien();
+		cmbTim.addItem("");
+		for (Boolean s : list) {
+			cmbTim.addItem(s == true ? "Đang làm" : "Đã nghỉ việc");
+		}
+	}
 }

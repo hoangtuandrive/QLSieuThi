@@ -2,7 +2,7 @@ package entity;
 
 import java.io.Serializable;
 
-import jakarta.persistence.Embeddable;
+import javax.persistence.Embeddable;
 
 
 

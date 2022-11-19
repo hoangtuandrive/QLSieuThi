@@ -4,13 +4,13 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 
 
 @Entity
@@ -20,9 +20,9 @@ public class NhanVien implements Serializable{
 	 */
 	private static final long serialVersionUID = 8452382776766015338L;
 	@Id
-	@Column(columnDefinition = "nvarchar(20)")
+	@Column(columnDefinition = "nchar(20)")
 	private String maNV;
-	@Column(columnDefinition = "nvarchar(50)")
+	@Column(columnDefinition = "nchar(50)")
 	private String tenNV;
 	private Boolean gioiTinh;
 	@Column(columnDefinition = "nchar(10)")
@@ -32,6 +32,7 @@ public class NhanVien implements Serializable{
 	private double luong;
 	@Column(columnDefinition = "nchar(50)")
 	private String CMND;
+	@Column(columnDefinition = "date")
 	private Date ngaySinh;
 	@Column(columnDefinition = "nchar(50)")
 	private String diaChi;

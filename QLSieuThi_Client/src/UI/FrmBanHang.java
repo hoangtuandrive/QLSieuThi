@@ -45,7 +45,16 @@ import com.formdev.flatlaf.FlatLightLaf;
 //import com.sun.org.apache.xerces.internal.impl.xpath.regex.ParseException;
 import com.toedter.calendar.JDateChooser;
 
-public class FrmBanHang extends JFrame {
+import entity.SanPham;
+import dao.BanHangDao;
+import dao.ChiTietHoaDonDao;
+import dao.HoaDonDao;
+import dao.KhachHangDao;
+import dao.NhanVienDao;
+import dao.SanPhamDao;
+import dao.TaiKhoanDao;
+
+public class FrmBanHang extends JFrame implements ActionListener {
 
 	/**
 	 * 
@@ -53,8 +62,8 @@ public class FrmBanHang extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JTextField txtTim;
 	private JButton btnTim;
-	private static DefaultTableModel modelHangHoa;
-	private static JTable tableHangHoa;
+	private static DefaultTableModel modelSanPham;
+	private static JTable tableSanPham;
 	private JTextField txtMaKhachHang;
 	private JCheckBox chkNam;
 	private JTextField txtSoLuong;
@@ -95,6 +104,9 @@ public class FrmBanHang extends JFrame {
 	private static JComboBox<String> cmbGioHang;
 	public static String maHDMoiDat = "";
 	public static String maKHDatGioHang = "";
+	private static SanPhamDao sanpham_dao;
+	private static KhachHangDao khachhang_dao;
+	private static HoaDonDao hoadon_dao;
 
 	public JPanel createPanelBanHang() {
 		FlatLightLaf.setup();
@@ -104,7 +116,6 @@ public class FrmBanHang extends JFrame {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		JPanel p = new JPanel();
-
 
 		Box b = Box.createHorizontalBox();
 		Box b1 = Box.createVerticalBox();
@@ -125,7 +136,7 @@ public class FrmBanHang extends JFrame {
 		Box b16 = Box.createHorizontalBox();
 		Box b17 = Box.createHorizontalBox();
 
-		String[] tim = { "Mã Hàng Hóa", "Tên Hàng Hóa", "Loại Hàng", "Nhà Cung Cấp", "Đơn Giá", "Số Lượng Tồn" };
+		String[] tim = { "Mã Sản Phẩm", "Tên Sản Phẩm", "Loại Hàng", "Nhà Cung Cấp", "Đơn Giá", "Số Lượng Tồn" };
 		cmbChon = new JComboBox<String>(tim);
 		b3.add(cmbChon);
 		b3.add(Box.createHorizontalStrut(10));
@@ -136,18 +147,17 @@ public class FrmBanHang extends JFrame {
 		cmbChon.setSize(20, cmbTim.getPreferredSize().height);
 		b3.add(cmbTim);
 		b3.add(Box.createHorizontalStrut(10));
-		b3.add(btnTim = new JButton("TÌM HÀNG", new ImageIcon("image/timLinhKien.png")));
+		b3.add(btnTim = new JButton("TÌM HÀNG", new ImageIcon("image/timhanghoa.png")));
 		btnTim.setBackground(new Color(0, 148, 224));
 		btnTim.setForeground(Color.WHITE);
 		btnTim.setFocusPainted(false);
 
 		b3.setBorder(
-				BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "TÌM HÀNG HÓA	: "));
+				BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "TÌM SẢN PHẨM	: "));
 
-		String[] colHeader = { "Mã Hàng Hóa", "Tên Hàng Hóa", "Loại Hàng", "Nhà Cung Cấp", "Đơn Giá",
-				"Số Lượng Tồn" };
-		modelHangHoa = new DefaultTableModel(colHeader, 0);
-		tableHangHoa = new JTable(modelHangHoa) {
+		String[] colHeader = { "Mã Sản Phẩm", "Tên Sản Phẩm", "Loại Hàng", "Nhà Cung Cấp", "Đơn Giá", "Số Lượng Tồn" };
+		modelSanPham = new DefaultTableModel(colHeader, 0);
+		tableSanPham = new JTable(modelSanPham) {
 			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 				Component c = super.prepareRenderer(renderer, row, column);
 				Color color1 = new Color(219, 243, 255);
@@ -160,20 +170,20 @@ public class FrmBanHang extends JFrame {
 				return c;
 			}
 		};
-		tableHangHoa.setGridColor(getBackground());
-		tableHangHoa.setRowHeight(tableHangHoa.getRowHeight() + 20);
-		tableHangHoa.setSelectionBackground(new Color(255, 255, 128));
-		JTableHeader tableHeader = tableHangHoa.getTableHeader();
+		tableSanPham.setGridColor(getBackground());
+		tableSanPham.setRowHeight(tableSanPham.getRowHeight() + 20);
+		tableSanPham.setSelectionBackground(new Color(255, 255, 128));
+		JTableHeader tableHeader = tableSanPham.getTableHeader();
 		tableHeader.setBackground(new Color(0, 148, 224));
 		tableHeader.setFont(new Font("Tahoma", Font.BOLD, 12));
 		tableHeader.setForeground(Color.WHITE);
 		tableHeader.setPreferredSize(new Dimension(WIDTH, 30));
-		JScrollPane tblscroll = new JScrollPane(tableHangHoa);
-		tableHangHoa.setPreferredScrollableViewportSize(new Dimension(650, 580));
+		JScrollPane tblscroll = new JScrollPane(tableSanPham);
+		tableSanPham.setPreferredScrollableViewportSize(new Dimension(650, 580));
 		b1.add(b3);
 		b1.add(tblscroll);
 		tblscroll.setBorder(
-				BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "DANH SÁCH HÀNG HÓA: "));
+				BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "DANH SÁCH SẢN PHẨM: "));
 
 		b.add(lblTitle = new JLabel("THÔNG TIN KHÁCH HÀNG"));
 		b5.add(lblMa = new JLabel("Mã Khách Hàng:"));
@@ -242,7 +252,7 @@ public class FrmBanHang extends JFrame {
 		b4.add(b16);
 		b4.add(b11);
 
-		String[] colHeader1 = { "Mã Hàng Hóa", "Tên Hàng Hóa", "Loại Hàng", "Nhà Cung Cấp", "Đơn Giá", "Số Lượng",
+		String[] colHeader1 = { "Mã Sản Phẩm", "Tên Sản Phẩm", "Loại Hàng", "Nhà Cung Cấp", "Đơn Giá", "Số Lượng",
 				"Thành Tiền" };
 		modelGioHang = new DefaultTableModel(colHeader1, 0);
 		tableGioHang = new JTable(modelGioHang) {
@@ -261,15 +271,16 @@ public class FrmBanHang extends JFrame {
 		tableGioHang.setGridColor(getBackground());
 		tableGioHang.setRowHeight(tableGioHang.getRowHeight() + 30);
 		tableGioHang.setSelectionBackground(new Color(255, 255, 128));
+		tableGioHang.setSelectionForeground(Color.BLACK);
 		JTableHeader tableHeader1 = tableGioHang.getTableHeader();
 		tableHeader1.setBackground(new Color(0, 148, 224));
 		tableHeader1.setFont(new Font("Tahoma", Font.BOLD, 11));
 		tableHeader1.setForeground(Color.WHITE);
 		tableHeader1.setPreferredSize(new Dimension(WIDTH, 30));
-		tableHangHoa.setRowHeight(tableHangHoa.getRowHeight() + 20);
+		tableSanPham.setRowHeight(tableSanPham.getRowHeight() + 20);
 
-		tableHangHoa.getColumnModel().getColumn(1).setPreferredWidth(165);
-		
+		tableSanPham.getColumnModel().getColumn(1).setPreferredWidth(165);
+
 		JScrollPane tblscroll1 = new JScrollPane(tableGioHang);
 		tblscroll1.setBorder(javax.swing.BorderFactory.createTitledBorder("GIỎ HÀNG: "));
 		tableGioHang.setPreferredScrollableViewportSize(new Dimension(500, 105));
@@ -342,7 +353,7 @@ public class FrmBanHang extends JFrame {
 		btnThanhToan.setBounds(36, 330, 79, 13);
 		btnHuy.setBounds(131, 330, 79, 13);
 		txtMaKhachHang.setEditable(false);
-		
+
 		cmbChon.setFont(new Font("Tahoma", Font.BOLD, 12));
 		cmbTim.setFont(new Font("Tahoma", Font.BOLD, 12));
 		btnTim.setFont(new Font("Tahoma", Font.BOLD, 12));
@@ -379,18 +390,29 @@ public class FrmBanHang extends JFrame {
 		tableGioHang.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tableGioHang.setDefaultEditor(Object.class, null);
 		tableGioHang.getTableHeader().setReorderingAllowed(false);
-		tableHangHoa.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		tableHangHoa.setDefaultEditor(Object.class, null);
-		tableHangHoa.getTableHeader().setReorderingAllowed(false);
-		
+		tableSanPham.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tableSanPham.setDefaultEditor(Object.class, null);
+		tableSanPham.getTableHeader().setReorderingAllowed(false);
+
 //		btnTaoGioHang.setEnabled(false);
 //		txtTongTien.setEditable(false);
 
 		txtTongTien.setBorder(null);
 		txtTongTien.setBackground(null);
 		txtTongTien.setText(null);
-		
-		
+
+		btnTimKHCu.addActionListener(this);
+		btnTaoGioHang.addActionListener(this);
+		btnCong.addActionListener(this);
+		btnTru.addActionListener(this);
+		btnThanhToan.addActionListener(this);
+		btnTim.addActionListener(this);
+		btnHuy.addActionListener(this);
+		cmbGioHang.addActionListener(this);
+		cmbChon.addActionListener(this);
+		btnTaoGioHang.setEnabled(false);
+		txtTongTien.setEditable(false);
+
 		return p;
 	}
 
@@ -398,5 +420,170 @@ public class FrmBanHang extends JFrame {
 		// TODO Auto-generated method stub
 		new GUI().setVisible(true);
 	}
-	
+
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public static void docDuLieuDatabaseVaoTableSanPham() throws RemoteException {
+		List<SanPham> listSP = new ArrayList<SanPham>();
+		listSP = sanpham_dao.getTatCaSanPham();
+		DecimalFormat df = new DecimalFormat("#,##0");
+		for (SanPham sp : listSP) {
+			modelSanPham.addRow(new Object[] { sp.getMaSP().trim(), sp.getTenSP().trim(), sp.getLoaiHang().trim(),
+					sp.getNhaCungCap().trim(), df.format(sp.getDonGia()), sp.getSoLuong() });
+		}
+	}
+
+	public static void xoaHetDLSanPham() {
+		DefaultTableModel dm = (DefaultTableModel) tableSanPham.getModel();
+		dm.setRowCount(0);
+	}
+
+	public static void docDuLieuVaoCmbSDT() {
+		cmbDanhSachSdt.removeAllItems();
+		List<String> listSDT = khachhang_dao.getTatCaSDTKhachHang();
+		cmbDanhSachSdt.addItem("");
+		for (String s : listSDT) {
+			cmbDanhSachSdt.addItem(s.trim());
+		}
+	}
+
+	public static void docMaSanPhamVaoCmbTim() {
+		cmbTim.removeAllItems();
+		List<String> list = sanpham_dao.getTatCaMaSanPham();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docTenSanPhamVaoCmbTim() {
+		cmbTim.removeAllItems();
+		List<String> list = SanPham_dao.getTatCaTenSanPham();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docNhaCungCapSanPhamVaoCmbTim() {
+		cmbTim.removeAllItems();
+		List<String> list = SanPham_dao.getTatCaNhaCungCapSanPham();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docLoaiHangSanPhamVaoCmbTim() {
+		cmbTim.removeAllItems();
+		List<String> list = SanPham_dao.getTatCaLoaiHangSanPham();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docDonGiaSanPhamVaoCmbTim() {
+		DecimalFormat df = new DecimalFormat("#,##0");
+		cmbTim.removeAllItems();
+		List<Double> list = SanPham_dao.getTatCaDonGiaSanPham();
+		cmbTim.addItem("");
+		for (Double s : list) {
+			cmbTim.addItem(df.format(s));
+		}
+	}
+
+	public static void docSoLuongTonSanPhamVaoCmbTim() {
+		DecimalFormat df = new DecimalFormat("#");
+		cmbTim.removeAllItems();
+		List<Integer> list = SanPham_dao.getTatCaSoLuongTonSanPham();
+		cmbTim.addItem("");
+		for (Integer s : list) {
+			cmbTim.addItem(df.format(s));
+		}
+	}
+
+	public void xoaThongTinTrenTextField() {
+		txtCMND.setText("");
+		txtTenKhachHang.setText("");
+		txtSoLuong.setText("");
+		txtDiaChi.setText("");
+		txtMaKhachHang.setText("");
+		txtNgaySinh.setDate(new Date(1999 - 1900, 1 - 1, 1));
+		txtEmail.setText("");
+		cmbGioHang.setSelectedIndex(-1);
+		cmbDanhSachSdt.setSelectedIndex(-1);
+		cmbGioiTinh.setSelectedIndex(0);
+	}
+
+	public void cmbGioHangXuongTable() {
+		Object giaTriCbo = cmbGioHang.getSelectedItem();
+		if (giaTriCbo == null || giaTriCbo.toString().trim().equals("")) {
+
+		} else {
+			String temp = giaTriCbo.toString().trim();
+
+			String sdtTrongCbo = temp.replaceAll("[^0-9]", "");
+			if (giaTriCbo == null || giaTriCbo.toString().trim().equals("")) {
+				xoaHetDLGioHang();
+			} else {
+				if (sdtTrongCbo.trim().equals("")) {
+
+				} else {
+					xoaHetDLGioHang();
+					// Tìm mã hóa đơn
+					String maHD = null;
+					List<HoaDon> listHD = hoadon_dao.getTatCaHoaDonChuaTinhTien();
+					for (HoaDon hd : listHD) {
+						if (hd.getMaKH().getSDT().equals(sdtTrongCbo)) {
+							maHD = hd.getMaHD();
+							break;
+						}
+					}
+					// Hiện lên bảng và txt
+					Double tongTien = 0.0;
+					DecimalFormat df = new DecimalFormat("#,##0");
+					List<ChiTietHoaDon> listHDDV = cthd_dao.getCTHDTheoMaHDLenTable(maHD);
+					for (ChiTietHoaDon cthd : listHDDV) {
+						modelGioHang.addRow(new Object[] { cthd.getMaSanPham().getMaLK().trim(),
+								cthd.getMaSanPham().getTenLK().trim(), cthd.getMaSanPham().getLoaiHang().trim(),
+								cthd.getMaSanPham().getNhaCungCap().trim(),
+								df.format(cthd.getMaSanPham().getDonGia()), cthd.getSoLuong(),
+								df.format(cthd.getThanhTien()) });
+						tongTien += cthd.getThanhTien();
+					}
+					if (tongTien == 0)
+						txtTongTien.setText("0.0 VNĐ");
+					else
+						txtTongTien.setText(df.format(tongTien) + " VNĐ");
+				}
+				// Điền textfield
+				List<KhachHang> list = khachhang_dao.getTatCaKhachHang();
+
+				List<KhachHang> listKHTrungSDT = new ArrayList<KhachHang>();
+
+				for (KhachHang khachHang : list) {
+					if (khachHang.getSDT().trim().equals(sdtTrongCbo.trim())) {
+						listKHTrungSDT.add(khachHang);
+					}
+				}
+
+				if (listKHTrungSDT.size() == 1) {
+					KhachHang kh = listKHTrungSDT.get(0);
+					txtTenKhachHang.setText(kh.getTenKH().trim());
+					txtCMND.setText(kh.getCMND().trim());
+					cmbGioiTinh.setSelectedItem(kh.isGioiTinh() == true ? "Nam" : "Nữ");
+					txtNgaySinh.setDate(kh.getNgaySinh());
+					txtEmail.setText(kh.getEmail().trim());
+					txtDiaChi.setText(kh.getDiaChi().trim());
+					txtMaKhachHang.setText(kh.getMaKH().trim());
+					btnTaoGioHang.setEnabled(true);
+				}
+			}
+		}
+	}
 }

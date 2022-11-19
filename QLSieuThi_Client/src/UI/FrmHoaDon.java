@@ -109,6 +109,7 @@ public class FrmHoaDon extends JFrame {
 		tableHoaDon.setGridColor(getBackground());
 		tableHoaDon.setRowHeight(tableHoaDon.getRowHeight() + 20);
 		tableHoaDon.setSelectionBackground(new Color(255, 255, 128));
+		tableHoaDon.setSelectionForeground(Color.BLACK);
 		tableHoaDon.setPreferredScrollableViewportSize(new Dimension(1200, 590));
 		JTableHeader tableHeader = tableHoaDon.getTableHeader();
 		tableHeader.setBackground(new Color(0, 148, 224));

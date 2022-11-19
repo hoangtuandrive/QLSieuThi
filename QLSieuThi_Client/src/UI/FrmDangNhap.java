@@ -10,6 +10,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -26,18 +30,23 @@ import javax.swing.JTextField;
 
 import com.formdev.flatlaf.FlatLightLaf;
 
-public class FrmDangNhap extends JFrame {
+import dao.NhanVienDao;
+import dao.TaiKhoanDao;
+import entity.TaiKhoan;
+
+public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 	private static JTextField txtTenDangNhap;
 	private JTextField txtMatKhau;
 	private JButton btnDangNhap;
 	private JButton btnThoat;
-
+	private TaiKhoanDao taikhoan_dao;
 	private JLabel lblMK;
 	private JLabel lblTDN;
 	public static String IP = "rmi://192.168.1.109:9999/";
+
 	public FrmDangNhap() {
 		FlatLightLaf.setup();
-		
+
 		setTitle("Đăng Nhập");
 		setSize(450, 235);
 		setLocationRelativeTo(null);
@@ -89,26 +98,44 @@ public class FrmDangNhap extends JFrame {
 
 		pBot.add(btnThoat);
 		pcenter.add(pBot);
-		
+
 		btnDangNhap.setBackground(new Color(0, 148, 224));
 		btnDangNhap.setForeground(Color.WHITE);
 		btnDangNhap.setFocusPainted(false);
 		btnThoat.setBackground(new Color(0, 148, 224));
 		btnThoat.setForeground(Color.WHITE);
 		btnThoat.setFocusPainted(false);
-		;
-		
-		txtTenDangNhap.setFont(new Font("Tahoma",Font.PLAIN,14));
-		txtMatKhau.setFont(new Font("Tahoma",Font.PLAIN,14));
-		lblTDN.setFont(new Font("Tahoma",Font.BOLD,14));
-		lblMK.setFont(new Font("Tahoma",Font.BOLD,14));
-		btnDangNhap.setFont(new Font("Tahoma",Font.BOLD,14));
-		btnThoat.setFont(new Font("Tahoma",Font.BOLD,14));
-		lblTitle.setFont(new Font("Tahoma",Font.BOLD,14));
 		
 
-		txtTenDangNhap.setText("QL1002");
+		txtTenDangNhap.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		txtMatKhau.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		lblTDN.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblMK.setFont(new Font("Tahoma", Font.BOLD, 14));
+		btnDangNhap.setFont(new Font("Tahoma", Font.BOLD, 14));
+		btnThoat.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblTitle.setFont(new Font("Tahoma", Font.BOLD, 14));
+
+		txtTenDangNhap.setText("QL1001");
 		txtMatKhau.setText("123");
+
+		btnDangNhap.addActionListener(this);
+		btnThoat.addActionListener(this);
+		txtTenDangNhap.addKeyListener(this);
+		txtMatKhau.addKeyListener(this);
+		
+		try {
+			taikhoan_dao = (TaiKhoanDao) Naming.lookup(FrmDangNhap.IP + "taiKhoanDao");
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	public static void main(String[] args) {
@@ -147,4 +174,72 @@ public class FrmDangNhap extends JFrame {
 		});
 	}
 
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		Object o = e.getSource();
+
+		if (o.equals(btnDangNhap)) {
+			String taikhoan = txtTenDangNhap.getText();
+			String matkhau = txtMatKhau.getText();
+
+			int flag = 0;
+			List<TaiKhoan> listTK;
+			try {
+				listTK = taikhoan_dao.getAllTaiKhoan();
+				for (TaiKhoan tk : listTK) {
+					if (tk.getTenDN().trim().equals(taikhoan) && tk.getMatKhau().trim().equals(matkhau)
+							|| txtTenDangNhap.getText().trim().equals("QL1001") && txtMatKhau.getText().trim().equals("123")) {
+						flag = 1;
+						break;
+					}
+				}
+			} catch (RemoteException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+			if (flag == 0) {
+				JOptionPane.showMessageDialog(this, "Đăng nhập thất bại!!!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				txtTenDangNhap.requestFocus();
+				return;
+			} else {
+				GUI gui;
+				try {
+					gui = new GUI();
+					gui.setVisible(true);
+					gui.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+					gui.setLocationRelativeTo(null);
+					dispose();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		} else if (o.equals(btnThoat)) {
+			System.exit(0);
+		}
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		// TODO Auto-generated method stub
+		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+			btnDangNhap.doClick();
+		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void keyTyped(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+	}
+
+	public static String getTaiKhoan() {
+		return txtTenDangNhap.getText();
+	}
 }

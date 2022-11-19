@@ -17,8 +17,10 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.SortedSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -42,15 +44,14 @@ import com.toedter.calendar.JDateChooser;
 import dao.KhachHangDao;
 import entity.KhachHang;
 
-
-public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,MouseListener {
+public class FrmKhachHang extends javax.swing.JFrame implements ActionListener, MouseListener {
 
 	private JComboBox<String> cmbChon;
 	private static JComboBox<String> cmbTim;
 	private JButton btnTim;
-	private KhachHangDao kh_dao;
-	
-	public JPanel createPanelKhachHang() throws RemoteException{
+	private static KhachHangDao kh_dao;
+
+	public JPanel createPanelKhachHang() throws RemoteException {
 		FlatLightLaf.setup();
 		pntblKhachHang = new javax.swing.JScrollPane();
 		tableKhachHang = new javax.swing.JTable();
@@ -100,6 +101,8 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 		tableKhachHang.setGridColor(getBackground());
 		tableKhachHang.setRowHeight(tableKhachHang.getRowHeight() + 20);
 		tableKhachHang.setSelectionBackground(new Color(255, 255, 128));
+		tableKhachHang.setSelectionForeground(Color.BLACK);
+
 		JTableHeader tableHeader = tableKhachHang.getTableHeader();
 		tableHeader.setBackground(new Color(0, 148, 224));
 		tableHeader.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -229,7 +232,7 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 		btnThem.setText("THÊM");
 		btnSua.setText("SỬA");
 		btnXoa.setText("XÓA");
-		
+
 		btnThem.setBackground(new Color(0, 148, 224));
 		btnThem.setForeground(Color.WHITE);
 		btnThem.setFocusPainted(false);
@@ -265,7 +268,7 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 		AutoCompleteDecorator.decorate(cmbTim);
 		cmbTim.setMaximumRowCount(10);
 		cmbChon.setSize(20, cmbTim.getPreferredSize().height);
-		btnTim = new JButton("TÌM KIẾM",new ImageIcon("image/timkiem.png"));
+		btnTim = new JButton("TÌM KIẾM", new ImageIcon("image/timkiem.png"));
 		btnTim.setBackground(new Color(0, 148, 224));
 		btnTim.setForeground(Color.WHITE);
 		btnTim.setFocusPainted(false);
@@ -313,9 +316,9 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 								.addComponent(pnChucNang, javax.swing.GroupLayout.PREFERRED_SIZE, 100,
 										javax.swing.GroupLayout.PREFERRED_SIZE)))
 				.addContainerGap()));
-		
-		pntblKhachHang.setBorder(
-				BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "DANH SÁCH KHÁCH HÀNG: "));
+
+		pntblKhachHang.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK),
+				"DANH SÁCH KHÁCH HÀNG: "));
 		lblMaKhachHang.setFont(new Font("Tahoma", Font.BOLD, 12));
 		txtMaKhachHang.setFont(new Font("Tahoma", Font.BOLD, 12));
 		lblTen.setFont(new Font("Tahoma", Font.BOLD, 12));
@@ -323,6 +326,7 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 		lblNgaySinh.setFont(new Font("Tahoma", Font.BOLD, 12));
 		txtNgaySinh.setFont(new Font("Tahoma", Font.BOLD, 12));
 		lblCMND.setFont(new Font("Tahoma", Font.BOLD, 12));
+		txtCMND.setFont(new Font("Tahoma", Font.BOLD, 12));
 		lblGioiTinh.setFont(new Font("Tahoma", Font.BOLD, 12));
 		cmbGioiTinh.setFont(new Font("Tahoma", Font.BOLD, 12));
 		lblSDT.setFont(new Font("Tahoma", Font.BOLD, 12));
@@ -337,25 +341,22 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 		cmbTim.setFont(new Font("Tahoma", Font.BOLD, 12));
 		cmbChon.setFont(new Font("Tahoma", Font.BOLD, 12));
 		btnTim.setFont(new Font("Tahoma", Font.BOLD, 12));
-		
-		
+
 		tableKhachHang.getColumnModel().getColumn(0).setPreferredWidth(20);
 		tableKhachHang.getColumnModel().getColumn(2).setPreferredWidth(30);
 		tableKhachHang.getColumnModel().getColumn(3).setPreferredWidth(30);
 		tableKhachHang.getColumnModel().getColumn(4).setPreferredWidth(10);
 		tableKhachHang.getColumnModel().getColumn(5).setPreferredWidth(30);
-		
-//		txtMaKhachHang.setEditable(false);
+		txtMaKhachHang.setEditable(false);
 
 		tableKhachHang.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tableKhachHang.setDefaultEditor(Object.class, null);
 		tableKhachHang.getTableHeader().setReorderingAllowed(false);
 
-		
 		pack();
-		
+
 		try {
-			kh_dao= (KhachHangDao) Naming.lookup(FrmDangNhap.IP+"khachHangDao");
+			kh_dao = (KhachHangDao) Naming.lookup(FrmDangNhap.IP + "khachHangDao");
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -366,15 +367,20 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
+		cmbChon.addActionListener(this);
+		cmbTim.addActionListener(this);
+		btnTim.addActionListener(this);
+
 		docDuLieuDatabaseVaoTable();
+		docMaKhachHangVaoCmbTim();
+		
 		btnThem.addActionListener(this);
 		btnSua.addActionListener(this);
 		btnXoa.addActionListener(this);
 		btnTim.addActionListener(this);
 		tableKhachHang.addMouseListener(this);
-		
-		
+
 		return panel;
 
 	}// </editor-fold>//GEN-END:initComponents
@@ -423,7 +429,12 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 		/* Create and display the form */
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				new FrmDangNhap().setVisible(true);
+				try {
+					new GUI().setVisible(true);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
 	}
@@ -466,13 +477,15 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 		txtEmail.setText(null);
 		txtDiaChi.setText(null);
 	}
-	public  void docDuLieuDatabaseVaoTable() throws RemoteException {
+
+	public void docDuLieuDatabaseVaoTable() throws RemoteException {
+		SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
 		List<KhachHang> listKH = new ArrayList<KhachHang>();
 		listKH = kh_dao.getTatCaKhachHang();
 		for (KhachHang kh : listKH) {
-			modelKhachHang.addRow(new Object[] { kh.getMaKH().trim(), kh.getTenKH().trim(), kh.getNgaySinh(),
-					kh.getCMND().trim(), kh.isGioiTinh() == true ? "Nam" : "Nữ", kh.getSDT().trim(), 
-					kh.getEmail().trim(), kh.getDiaChi().trim()});
+			modelKhachHang.addRow(new Object[] { kh.getMaKH().trim(), kh.getTenKH().trim(),
+					format1.format(kh.getNgaySinh()), kh.getCMND().trim(), kh.isGioiTinh() == true ? "Nam" : "Nữ",
+					kh.getSDT().trim(), kh.getEmail().trim(), kh.getDiaChi().trim() });
 		}
 	}
 
@@ -488,39 +501,39 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 		txtMaKhachHang.setText(modelKhachHang.getValueAt(row, 0).toString());
 		txtTenKhachHang.setText(modelKhachHang.getValueAt(row, 1).toString());
 		String dateString = modelKhachHang.getValueAt(row, 2).toString();
-//		String[] a = dateString.split("-");
-//		txtNgaySinh
-//				.setDate(new Date(Integer.parseInt(a[0]) - 1900, Integer.parseInt(a[1]) - 1, Integer.parseInt(a[2])));
+		String[] a = dateString.split("-");
+		txtNgaySinh
+				.setDate(new Date(Integer.parseInt(a[0]) - 1900, Integer.parseInt(a[1]) - 1, Integer.parseInt(a[2])));
 		txtCMND.setText(modelKhachHang.getValueAt(row, 3).toString());
 		cmbGioiTinh.setSelectedItem(modelKhachHang.getValueAt(row, 4).toString().trim());
 		txtSDT.setText(modelKhachHang.getValueAt(row, 5).toString());
 		txtEmail.setText(modelKhachHang.getValueAt(row, 6).toString());
 		txtDiaChi.setText(modelKhachHang.getValueAt(row, 7).toString());
-		
+
 	}
 
 	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -573,7 +586,7 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 			}
 			tableKhachHang.getSelectionModel().clearSelection();
 			emptyTextField();
-			//FrmBanHang.docDuLieuVaoCmbSDT();
+//			FrmBanHang.docDuLieuVaoCmbSDT();
 		}
 		if (o.equals(btnSua)) {
 			String maKH = txtMaKhachHang.getText();
@@ -586,11 +599,11 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 
 			Date ngaySinh = txtNgaySinh.getDate();
 			java.sql.Date date = new java.sql.Date(ngaySinh.getYear(), ngaySinh.getMonth(), ngaySinh.getDate());
-			if(!validInput()) {
+			if (!validInput()) {
 				return;
-			}
-			else {
-				KhachHang kh = new KhachHang(maKH, tenKH, gioiTinh == "Nam" ? true : false, SDT, CMND, date, diaChi, email);
+			} else {
+				KhachHang kh = new KhachHang(maKH, tenKH, gioiTinh == "Nam" ? true : false, SDT, CMND, date, diaChi,
+						email);
 
 				try {
 					kh_dao.update(kh);
@@ -607,11 +620,236 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 					e1.printStackTrace();
 				}
 				tableKhachHang.getSelectionModel().clearSelection();
-				//FrmBanHang.docDuLieuVaoCmbSDT();
-			}	
+				// FrmBanHang.docDuLieuVaoCmbSDT();
+			}
 		}
-		
+
+		if (o.equals(cmbChon)) {
+			if (cmbChon.getSelectedIndex() == 0) {
+				try {
+					docMaKhachHangVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 1) {
+				try {
+					docTenKhachHangVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 2) {
+				try {
+					docGioiTinhKhachHangVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 3) {
+				try {
+					docSDTKhachHangVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 4) {
+				try {
+					docCMNDKhachHangVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 5) {
+				try {
+					docNgaySinhKhachHangVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 6) {
+				try {
+					docDiaChiKhachHangVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 7) {
+				try {
+					docEmailKhachHangVaoCmbTim();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		}
+		if (o.equals(btnTim)) {
+			DefaultTableModel model = (DefaultTableModel) tableKhachHang.getModel();
+			model.setRowCount(0);
+			DecimalFormat df = new DecimalFormat("#,##0");
+			if (cmbTim.getSelectedIndex() == 0) {
+				try {
+					docDuLieuDatabaseVaoTable();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			} else if (cmbChon.getSelectedIndex() == 0) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				List<KhachHang> list;
+				try {	
+					SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+					list = kh_dao.getTatCaKhachHang();
+					for (KhachHang kh : list) {
+						if (kh.getMaKH().trim().equals(tim.trim())) {
+							modelKhachHang.addRow(new Object[] { kh.getMaKH().trim(), kh.getTenKH().trim(),
+									format1.format(kh.getNgaySinh()), kh.getCMND().trim(), kh.isGioiTinh() == true ? "Nam" : "Nữ",
+									kh.getSDT().trim(), kh.getEmail().trim(), kh.getDiaChi().trim() });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+			} else if (cmbChon.getSelectedIndex() == 1) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				List<KhachHang> list;
+				try {
+					SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+					list = kh_dao.getTatCaKhachHang();
+					for (KhachHang kh : list) {
+						if (kh.getTenKH().trim().equals(tim.trim())) {
+							modelKhachHang.addRow(new Object[] { kh.getMaKH().trim(), kh.getTenKH().trim(),
+									format1.format(kh.getNgaySinh()), kh.getCMND().trim(), kh.isGioiTinh() == true ? "Nam" : "Nữ",
+									kh.getSDT().trim(), kh.getEmail().trim(), kh.getDiaChi().trim() });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+			} else if (cmbChon.getSelectedIndex() == 2) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				Boolean b = null;
+				if (tim == "Nam") {
+					b = true;
+				} else if (tim == "Nữ") {
+					b = false;
+				}
+				List<KhachHang> list;
+				try {
+					SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+					list = kh_dao.getTatCaKhachHang();
+					for (KhachHang kh : list) {
+						if (kh.isGioiTinh() == b) {
+							modelKhachHang.addRow(new Object[] { kh.getMaKH().trim(), kh.getTenKH().trim(),
+									format1.format(kh.getNgaySinh()), kh.getCMND().trim(), kh.isGioiTinh() == true ? "Nam" : "Nữ",
+									kh.getSDT().trim(), kh.getEmail().trim(), kh.getDiaChi().trim() });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+			} else if (cmbChon.getSelectedIndex() == 3) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				List<KhachHang> list;
+				try {
+					SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+					list = kh_dao.getTatCaKhachHang();
+					for (KhachHang kh : list) {
+						if (kh.getSDT().trim().equals(tim.trim())) {
+							modelKhachHang.addRow(new Object[] { kh.getMaKH().trim(), kh.getTenKH().trim(),
+									format1.format(kh.getNgaySinh()), kh.getCMND().trim(), kh.isGioiTinh() == true ? "Nam" : "Nữ",
+									kh.getSDT().trim(), kh.getEmail().trim(), kh.getDiaChi().trim() });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+			} else if (cmbChon.getSelectedIndex() == 4) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				List<KhachHang> list;
+				try {
+					SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+					list = kh_dao.getTatCaKhachHang();
+					for (KhachHang kh : list) {
+						if (kh.getCMND().trim().equals(tim.trim())) {
+							modelKhachHang.addRow(new Object[] { kh.getMaKH().trim(), kh.getTenKH().trim(),
+									format1.format(kh.getNgaySinh()), kh.getCMND().trim(), kh.isGioiTinh() == true ? "Nam" : "Nữ",
+									kh.getSDT().trim(), kh.getEmail().trim(), kh.getDiaChi().trim() });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+			} else if (cmbChon.getSelectedIndex() == 5) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				String[] a = tim.split("-");
+				Date d = new Date(Integer.parseInt(a[0]) - 1900, Integer.parseInt(a[1]) - 1, Integer.parseInt(a[2]));
+				List<KhachHang> list;
+				try {
+					SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+					list = kh_dao.getTatCaKhachHang();
+					for (KhachHang kh : list) {
+						if (kh.getNgaySinh().compareTo(d)==0) {
+							modelKhachHang.addRow(new Object[] { kh.getMaKH().trim(), kh.getTenKH().trim(),
+									format1.format(kh.getNgaySinh()), kh.getCMND().trim(), kh.isGioiTinh() == true ? "Nam" : "Nữ",
+									kh.getSDT().trim(), kh.getEmail().trim(), kh.getDiaChi().trim() });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+			} else if (cmbChon.getSelectedIndex() == 6) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				List<KhachHang> list;
+				try {
+					SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+					list = kh_dao.getTatCaKhachHang();
+					for (KhachHang kh : list) {
+						if (kh.getDiaChi().trim().equals(tim.trim())) {
+							modelKhachHang.addRow(new Object[] { kh.getMaKH().trim(), kh.getTenKH().trim(),
+									format1.format(kh.getNgaySinh()), kh.getCMND().trim(), kh.isGioiTinh() == true ? "Nam" : "Nữ",
+									kh.getSDT().trim(), kh.getEmail().trim(), kh.getDiaChi().trim() });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+			} else if (cmbChon.getSelectedIndex() == 7) {
+				String tim = cmbTim.getSelectedItem().toString().trim();
+				List<KhachHang> list;
+				try {
+					SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+					list = kh_dao.getTatCaKhachHang();
+					for (KhachHang kh : list) {
+						if (kh.getEmail().trim().equals(tim.trim())) {
+							modelKhachHang.addRow(new Object[] { kh.getMaKH().trim(), kh.getTenKH().trim(),
+									format1.format(kh.getNgaySinh()), kh.getCMND().trim(), kh.isGioiTinh() == true ? "Nam" : "Nữ",
+									kh.getSDT().trim(), kh.getEmail().trim(), kh.getDiaChi().trim() });
+						}
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		}
+
 	}
+
 	private boolean validInput() {
 		// TODO Auto-generated method stub
 		String maKH = txtMaKhachHang.getText();
@@ -620,7 +858,7 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 		String email = txtEmail.getText();
 		String diaChi = txtDiaChi.getText();
 		String cmnd = txtCMND.getText();
-		
+
 		if (tenKH.trim().length() > 0) {
 			if (!(tenKH.matches("[^\\@\\!\\$\\^\\&\\*\\(\\)]+"))) {
 				JOptionPane.showMessageDialog(this, "Tên khách hàng không chứa ký tự đặc biệt", "Lỗi",
@@ -670,5 +908,78 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener,M
 			return false;
 		}
 		return true;
+	}
+
+	public static void docMaKhachHangVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = kh_dao.getTatCaMaKhachHang();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docTenKhachHangVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = kh_dao.getTatCaTenKhachHang();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docGioiTinhKhachHangVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<Boolean> list = kh_dao.getTatCaGioiTinhKhachHang();
+		cmbTim.addItem("");
+		for (Boolean s : list) {
+			cmbTim.addItem(s == true ? "Nam" : "Nữ");
+		}
+	}
+
+	public static void docSDTKhachHangVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = kh_dao.getTatCaSDTKhachHangCMB();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docCMNDKhachHangVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = kh_dao.getTatCaCMNDKhachHang();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docNgaySinhKhachHangVaoCmbTim() throws RemoteException {
+		SimpleDateFormat date = new SimpleDateFormat("yyy-MM-dd");
+		cmbTim.removeAllItems();
+		SortedSet<Date> list = kh_dao.getTatCaNgaySinhKhachHang();
+		cmbTim.addItem("");
+		for (Date s : list) {
+			cmbTim.addItem(date.format(s));
+		}
+	}
+
+	public static void docDiaChiKhachHangVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = kh_dao.getTatCaDiaChiKhachHang();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docEmailKhachHangVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = kh_dao.getTatCaEmailKhachHang();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
 	}
 }

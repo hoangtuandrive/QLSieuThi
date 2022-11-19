@@ -46,9 +46,9 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 	public GUI() throws RemoteException {
 		FlatLightLaf.setup();
 		setTitle("QUẢN LÝ SIÊU THỊ");
-//		setResizable(false);
+		setResizable(false);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setExtendedState(NORMAL);
+		setExtendedState(MAXIMIZED_VERT);
 		setSize(1700, 980);
 		setLocationRelativeTo(null);
 		UIManager.put("TabbedPane.selected", new Color(50, 190, 255));
@@ -80,7 +80,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 		FrmHoaDon frmHoaDon = new FrmHoaDon();
 		FrmNhanVien frmNhanVien = new FrmNhanVien();
 		FrmKhachHang frmKhachHang = new FrmKhachHang();
-		FrmHangHoa frmHangHoa = new FrmHangHoa();
+		FrmSanPham frmHangHoa = new FrmSanPham();
 
 		/* create JPanel, which is content of tabs */
 		JPanel pnlTrangChu = createPanelTrangChu();
@@ -95,7 +95,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 		tabbedPane.addTab("BÁN HÀNG", new ImageIcon("image/banhang.png"), pnlBanHang, "BÁN HÀNG");
 		tabbedPane.addTab("NHÂN VIÊN", new ImageIcon("image/nhanvien.png"), pnlNhanVien, "NHÂN VIÊN");
 		tabbedPane.addTab("KHÁCH HÀNG", new ImageIcon("image/khachhang.png"), pnlKhachHang, "KHÁCH HÀNG");
-		tabbedPane.addTab("Hàng Hóa", new ImageIcon("image/linhkien.png"), pnlHangHoa, "HÀNG HÓA");
+		tabbedPane.addTab("SẢN PHẨM", new ImageIcon("image/hanghoa.png"), pnlHangHoa, "SẢN PHẨM");
 		tabbedPane.addTab("HÓA ĐƠN", new ImageIcon("image/hoadon.png"), pnlHoaDon, "HÓA ĐƠN");
 
 		return tabbedPane;
