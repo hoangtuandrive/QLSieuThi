@@ -123,8 +123,10 @@ public class KhachHang implements Serializable{
 				+ ", dshd=" + dshd + "]";
 	}
 
+	
+
 	public KhachHang(String maKH, String tenKH, boolean gioiTinh, String sDT, String cMND, Date ngaySinh, String diaChi,
-			String email, boolean gioHang) {
+			String email) {
 		super();
 		this.maKH = maKH;
 		this.tenKH = tenKH;
@@ -134,7 +136,23 @@ public class KhachHang implements Serializable{
 		this.ngaySinh = ngaySinh;
 		this.diaChi = diaChi;
 		this.email = email;
-		this.gioHang = gioHang;
+	}
+
+	public KhachHang(String maKH, String tenKH ,String sDT) {
+		this.maKH = maKH;
+		this.tenKH = tenKH;
+		SDT = sDT;
+	}
+	
+	public KhachHang(String maKH, String sDT) {
+		super();
+		this.maKH = maKH;
+		SDT = sDT;
+	}
+
+	public KhachHang(String maKH) {
+		super();
+		this.maKH = maKH;
 	}
 
 	public KhachHang() {

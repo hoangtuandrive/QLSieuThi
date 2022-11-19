@@ -5,9 +5,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
-import jakarta.transaction.Transactional;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import dao.NhanVienDao;
 import entity.NhanVien;
 import entity.TaiKhoan;
@@ -16,7 +15,7 @@ import util.MyEmFactory;
 public class NhanVienImpI extends UnicastRemoteObject implements NhanVienDao {
 
 	private static final long serialVersionUID = 6858116339844383030L;
-//	private static final long serialVersionUID = -1731791771568468903L;
+	// private static final long serialVersionUID = -1731791771568468903L;
 	private EntityManager em;
 
 	public NhanVienImpI() throws RemoteException {
@@ -70,11 +69,11 @@ public class NhanVienImpI extends UnicastRemoteObject implements NhanVienDao {
 		EntityTransaction tr = em.getTransaction();
 		try {
 			tr.begin();
-//			nv.setTaiKhoan(em.find(NhanVien.class, nv.getMaNV()).getTaiKhoan());
+			// nv.setTaiKhoan(em.find(NhanVien.class, nv.getMaNV()).getTaiKhoan());
 			em.merge(nv);
 
-//			NhanVien nv1 = em.find(NhanVien.class, nv.getMaNV());
-//			nv1.setTenNV(nv.getTenNV());
+			// NhanVien nv1 = em.find(NhanVien.class, nv.getMaNV());
+			// nv1.setTenNV(nv.getTenNV());
 
 			tr.commit();
 			return true;
@@ -93,6 +92,7 @@ public class NhanVienImpI extends UnicastRemoteObject implements NhanVienDao {
 			tr.begin();
 			em.clear();
 			String sql = "select * from NhanVien";
+			em.clear();
 			list = em.createNativeQuery(sql, NhanVien.class).getResultList();
 			tr.commit();
 			return list;
@@ -101,12 +101,5 @@ public class NhanVienImpI extends UnicastRemoteObject implements NhanVienDao {
 		}
 		return null;
 	}
-
-//	@SuppressWarnings("unchecked")
-//	@Override
-//	public List<NhanVien> getTatCaNhanVien() throws RemoteException {
-//		return em.createNativeQuery("select * from NhanVien", NhanVien.class)
-//				.getResultList();
-//	}
 
 }

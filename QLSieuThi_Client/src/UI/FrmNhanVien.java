@@ -42,16 +42,17 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.toedter.calendar.JDateChooser;
 
 import dao.NhanVienDao;
+import dao.TaiKhoanDao;
 import entity.NhanVien;
 import entity.TaiKhoan;
-
 
 public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, MouseListener {
 	private Boolean isQuanLy;
 	private JComboBox<String> cmbChon;
 	private static JComboBox<String> cmbTim;
 	private JButton btnTim;
-	private static   NhanVienDao nhanvien_dao;
+	private NhanVienDao nhanvien_dao;
+	private TaiKhoanDao tk_dao;
 
 	@SuppressWarnings("unchecked")
 	// <editor-fold defaultstate="collapsed" desc="Generated
@@ -99,7 +100,6 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		btnXoa.setForeground(Color.WHITE);
 		btnXoa.setFocusPainted(false);
 
-		
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
 		String[] header = { "Mã Nhân Viên", "Tên Nhân Viên", "Ngày Sinh", "CMND", "Giới Tính", "SDT", "Chức Vụ",
@@ -313,7 +313,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		AutoCompleteDecorator.decorate(cmbTim);
 		cmbTim.setMaximumRowCount(10);
 		cmbChon.setSize(20, cmbTim.getPreferredSize().height);
-		btnTim = new JButton("TÌM KIẾM",new ImageIcon("image/timkiem.png"));
+		btnTim = new JButton("TÌM KIẾM", new ImageIcon("image/timkiem.png"));
 		btnTim.setBackground(new Color(0, 148, 224));
 		btnTim.setForeground(Color.WHITE);
 		btnTim.setFocusPainted(false);
@@ -325,7 +325,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		b.add(btnTim);
 		b.add(Box.createHorizontalStrut(30));
 		pnlTimKiem.add(b);
-		
+
 		JPanel panel = new JPanel();
 		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
@@ -364,11 +364,11 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 
 		pack();
 
-//		txtMaNhanVien.setEditable(false);
-//		txtTrangThai.setEditable(false);
+		// txtMaNhanVien.setEditable(false);
+		// txtTrangThai.setEditable(false);
 
 		tableNhanVien.getColumnModel().getColumn(1).setPreferredWidth(110);
-		
+
 		pntblNhanVien.setBorder(
 				BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "DANH SÁCH NHÂN VIÊN: "));
 		lblmaNhanVien.setFont(new Font("Tahoma", Font.BOLD, 12));
@@ -400,18 +400,19 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		cmbChon.setFont(new Font("Tahoma", Font.BOLD, 12));
 		btnTim.setFont(new Font("Tahoma", Font.BOLD, 12));
 
-//		if (!isQuanLy) {
-//			btnThem.setEnabled(false);
-//			btnSua.setEnabled(false);
-//			btnXoa.setEnabled(false);
-//		}
+		// if (!isQuanLy) {
+		// btnThem.setEnabled(false);
+		// btnSua.setEnabled(false);
+		// btnXoa.setEnabled(false);
+		// }
 
 		tableNhanVien.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tableNhanVien.setDefaultEditor(Object.class, null);
 		tableNhanVien.getTableHeader().setReorderingAllowed(false);
-		
+
 		try {
-			nhanvien_dao =  (NhanVienDao) Naming.lookup(FrmDangNhap.IP+"nhanVienDao");
+			nhanvien_dao = (NhanVienDao) Naming.lookup(FrmDangNhap.IP + "nhanVienDao");
+			tk_dao = (TaiKhoanDao) Naming.lookup(FrmDangNhap.IP + "taiKhoanDao");
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -422,6 +423,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 		docDuLieuDatabaseVaoTable();
 		btnThem.addActionListener(this);
 		btnSua.addActionListener(this);
@@ -463,7 +465,6 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 	private javax.swing.JTextField txtTrangThai;
 	private JPanel pnlTimKiem;
 	private static DefaultTableModel modelNhanVien;
-	
 
 	private void emptyTextField() {
 		txtMaNhanVien.setText(null);
@@ -477,16 +478,16 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		txtDiaChi.setText(null);
 		txtLuong.setText(null);
 	}
-	public static void docDuLieuDatabaseVaoTable() throws RemoteException {
-		System.out.println("Doc");
+
+	public void docDuLieuDatabaseVaoTable() throws RemoteException {
 		List<NhanVien> listNV = new ArrayList<NhanVien>();
 		try {
 			listNV = nhanvien_dao.getTatCaNhanVien();
-		} catch (RemoteException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		DecimalFormat df = new DecimalFormat("#,##0");
 		for (NhanVien nv : listNV) {
 			modelNhanVien.addRow(new Object[] { nv.getMaNV().trim(), nv.getTenNV().trim(), nv.getNgaySinh(),
@@ -494,14 +495,15 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 					nv.getChucVu().trim(), nv.getEmail().trim(), nv.getDiaChi().trim(), df.format(nv.getLuong()),
 					nv.getTrangThai() ? "Đang làm" : "Đã nghỉ việc" });
 		}
-		
+
 	}
+
 	public static void xoaHetDL() {
 		System.out.println("Xoa");
 		DefaultTableModel dm = (DefaultTableModel) tableNhanVien.getModel();
 		dm.setRowCount(0);
 	}
-	
+
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		int row = tableNhanVien.getSelectedRow();
@@ -510,8 +512,9 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		String dateString = modelNhanVien.getValueAt(row, 2).toString();
 		String[] a = dateString.split("-");
 
-//		txtNgaySinh
-//				.setDate(new Date(Integer.parseInt(a[0]) - 1900, Integer.parseInt(a[1]) - 1, Integer.parseInt(a[2])));
+		// txtNgaySinh
+		// .setDate(new Date(Integer.parseInt(a[0]) - 1900, Integer.parseInt(a[1]) - 1,
+		// Integer.parseInt(a[2])));
 
 		txtCMND.setText(modelNhanVien.getValueAt(row, 3).toString());
 		cmbGioiTinh.setSelectedItem(FrmNhanVien.modelNhanVien.getValueAt(row, 4).toString().trim());
@@ -525,28 +528,33 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 			tienLuong += luong[i];
 		txtLuong.setText(tienLuong);
 		txtTrangThai.setText(modelNhanVien.getValueAt(row, 10).toString());
-		
+
 	}
+
 	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
+
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
+
 	@Override
 	public void mouseEntered(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
+
 	@Override
 	public void mouseExited(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object o = e.getSource();
@@ -555,7 +563,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 				return;
 			} else {
 				String maNV;
-				List<NhanVien> listNV = null;
+				List<NhanVien> listNV = new ArrayList<NhanVien>();
 				try {
 					listNV = nhanvien_dao.getTatCaNhanVien();
 				} catch (RemoteException e1) {
@@ -609,7 +617,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 						e1.printStackTrace();
 						JOptionPane.showMessageDialog(null, "That Bai");
 					}
-					//taikhoan_dao.create(tk);
+					// taikhoan_dao.create(tk);
 
 					xoaHetDL();
 					try {
@@ -650,24 +658,23 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 				tk.setMaNV(nv);
 				try {
 					nhanvien_dao.updateNV(nv);
-					
+
 					JOptionPane.showMessageDialog(null, "Thanh Cong");
 				} catch (RemoteException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 					JOptionPane.showMessageDialog(null, "That Bai");
 				}
-				
+
 				xoaHetDL();
 				try {
 					docDuLieuDatabaseVaoTable();
-					
+
 				} catch (RemoteException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				
-				
+
 				tableNhanVien.getSelectionModel().clearSelection();
 			}
 
@@ -692,11 +699,12 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 			}
 			try {
 				nhanvien_dao.delete(maNV);
+				tk_dao.Delete(maNV);
 			} catch (RemoteException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-//			taikhoan_dao.delete(tenTaiKhoan);
+
 			xoaHetDL();
 			try {
 				docDuLieuDatabaseVaoTable();
@@ -705,7 +713,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 				e1.printStackTrace();
 			}
 		}
-		
+
 	}
 
 	// End of variables declaration//GEN-END:variables
@@ -768,6 +776,5 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		}
 		return true;
 	}
-
 
 }

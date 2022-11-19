@@ -12,6 +12,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
@@ -37,17 +40,24 @@ import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
 import com.formdev.flatlaf.FlatLightLaf;
 
+import dao.NhanVienDao;
+import dao.SanPhamDao;
+import dao.TaiKhoanDao;
+
+import entity.SanPham;
+
 /**
  *
  * @author ACER
  */
-public class FrmHangHoa extends javax.swing.JFrame {
+public class FrmHangHoa extends javax.swing.JFrame implements ActionListener,MouseListener{
 
 	private JComboBox<String> cmbChon;
 	private static JComboBox<String> cmbTim;
 	private JButton btnTim;
-
-	public JPanel createPanelSanPham() {
+	private SanPhamDao sp_dao;
+	
+	public JPanel createPanelSanPham() throws RemoteException {
 		FlatLightLaf.setup();
 		
 		pntblHangHoa = new javax.swing.JScrollPane();
@@ -333,6 +343,29 @@ public class FrmHangHoa extends javax.swing.JFrame {
 		tableHangHoa.setDefaultEditor(Object.class, null);
 		tableHangHoa.getTableHeader().setReorderingAllowed(false);
 
+		
+		
+		try {
+			sp_dao =   (SanPhamDao) Naming.lookup(FrmDangNhap.IP+"sanPhamDao");
+			
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+		docDuLieuDatabaseVaoTable();
+		btnThem.addActionListener(this);
+		btnSua.addActionListener(this);
+		btnXoa.addActionListener(this);
+		btnTim.addActionListener(this);
+		tableHangHoa.addMouseListener(this);
+		
 		return panel;
 	}// </editor-fold>//GEN-END:initComponents
 
@@ -485,5 +518,170 @@ public class FrmHangHoa extends javax.swing.JFrame {
 			return false;
 		}
 		return true;
+	}
+	public  void docDuLieuDatabaseVaoTable() throws RemoteException {
+		List<SanPham> listsp = new ArrayList<SanPham>();
+		listsp = sp_dao.getTatCaSanPham();
+		DecimalFormat df = new DecimalFormat("#,##0.0");
+		for (SanPham lk : listsp) {
+			modelHangHoa.addRow(new Object[] { lk.getMaSP().trim(), lk.getTenSP().trim(), lk.getLoaiHang(),
+					lk.getNhaCungCap().trim(), df.format(lk.getDonGia()), lk.getSoLuong() });
+		}
+	}
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		int row = tableHangHoa.getSelectedRow();
+		txtMaHangHoa.setText(modelHangHoa.getValueAt(row, 0).toString());
+		txtTenHangHoa.setText(modelHangHoa.getValueAt(row, 1).toString());
+		txtLoaiHang.setText(modelHangHoa.getValueAt(row, 2).toString());
+		txtNhaCungCap.setText(modelHangHoa.getValueAt(row, 3).toString());
+		String tien[] = modelHangHoa.getValueAt(row, 4).toString().split(",");
+		String donGia = "";
+		for (int i = 0; i < tien.length; i++)
+			donGia += tien[i];
+		txtDonGia.setText(donGia);
+		txtSoLuong.setText(modelHangHoa.getValueAt(row, 5).toString());
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		Object o = e.getSource();
+		if (o.equals(btnThem)) {
+			if (!validInput()) {
+				return;
+			} else {
+				String masp;
+				List<SanPham> listsp = null;
+				try {
+					listsp = sp_dao.getTatCaSanPham();
+				} catch (RemoteException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+				if (listsp.size() == 0)
+					masp = "SP1001";
+				else {
+					String maspcu = listsp.get(listsp.size() - 1).getMaSP().trim();
+					int layMaSo = Integer.parseInt(maspcu.substring(2, maspcu.length()));
+					masp = "SP" + (layMaSo + 1);
+				}
+				String tensp = txtTenHangHoa.getText();
+				String loaiHang = txtLoaiHang.getText();
+				String nhaCungCap = txtNhaCungCap.getText();
+				int soLuong = Integer.parseInt(txtSoLuong.getText());
+				double donGia = Double.parseDouble(txtDonGia.getText());
+
+				SanPham sp = new SanPham(masp, tensp, loaiHang, nhaCungCap, donGia, soLuong);
+
+				try {
+					sp_dao.create(sp);
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+				xoaHetDL();
+				try {
+					docDuLieuDatabaseVaoTable();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+			}
+			tableHangHoa.getSelectionModel().clearSelection();
+			emptyTextField();
+
+			//FrmBanHang.xoaHetDLLinhKien();
+			//FrmBanHang.docDuLieuDatabaseVaoTableLinhKien();
+		}
+		if (o.equals(btnSua)) {
+			String masp = txtMaHangHoa.getText();
+			String tensp = txtTenHangHoa.getText();
+			String loaiHang = txtLoaiHang.getText();
+			String nhaCungCap = txtNhaCungCap.getText();
+			int soLuong = Integer.parseInt(txtSoLuong.getText());
+			double donGia = Double.parseDouble(txtDonGia.getText());
+			if (!validInput()) {
+				return;
+			} else {
+
+				SanPham sp = new SanPham(masp, tensp, loaiHang, nhaCungCap, donGia, soLuong);
+
+				try {
+					sp_dao.update(sp);
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+				xoaHetDL();
+				try {
+					docDuLieuDatabaseVaoTable();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				tableHangHoa.getSelectionModel().clearSelection();
+				//FrmBanHang.xoaHetDLLinhKien();
+				//FrmBanHang.docDuLieuDatabaseVaoTableLinhKien();
+			}
+		}
+		if (o.equals(btnXoa)) {
+			String masp = txtMaHangHoa.getText();
+			SanPham sp = new SanPham(masp);
+
+			try {
+				sp_dao.delete(sp);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			xoaHetDL();
+			try {
+				docDuLieuDatabaseVaoTable();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			tableHangHoa.getSelectionModel().clearSelection();
+			//FrmBanHang.xoaHetDLLinhKien();
+			//FrmBanHang.docDuLieuDatabaseVaoTableLinhKien();
+		}
+		
+	}
+	private void emptyTextField() {
+		txtMaHangHoa.setText(null);
+		txtTenHangHoa.setText(null);
+		txtDonGia.setText(null);
+		txtSoLuong.setText(null);
+		txtNhaCungCap.setText(null);
+		txtLoaiHang.setText(null);
 	}
 }

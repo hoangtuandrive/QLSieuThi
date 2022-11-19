@@ -43,8 +43,7 @@ public class NhanVien implements Serializable{
 	@PrimaryKeyJoinColumn
 	private TaiKhoan taiKhoan;
 	
-	@OneToMany
-	@JoinColumn(name = "maNV")
+	@OneToMany(mappedBy = "maNV")
 	private List<HoaDon> dshd;
 	public String getMaNV() {
 		return maNV;

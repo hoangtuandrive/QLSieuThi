@@ -12,4 +12,5 @@ public interface NhanVienDao extends Remote {
 	public boolean updateNV(NhanVien nv) throws RemoteException;
 	public List<NhanVien> getTatCaNhanVien() throws RemoteException;
 	public boolean delete(String id) throws RemoteException;
+	
 }
