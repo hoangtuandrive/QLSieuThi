@@ -12,7 +12,7 @@
 		<class>entity.SanPham</class>
 		<class>entity.TaiKhoan</class>
 		<class>entity.ChiTietHDPK</class>
-		
+
 		<properties>
 			<property name="jakarta.persistence.jdbc.driver"
 				value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
@@ -25,11 +25,11 @@
 				value="sa" />
 			<property name="hibernate.show_sql" value="true" />
 			<property name="hibernate.format_sql" value="true" />
-<!-- 			<property name="hibernate.hbm2ddl.auto" value="update"/> -->
+			<!-- <property name="hibernate.hbm2ddl.auto" value="update"/> -->
 			<property name="hibernate.hbm2ddl.auto" value="update" />
 		</properties>
-		
-		
+
+
 	</persistence-unit>
-	
+
 </persistence>

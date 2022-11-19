@@ -478,6 +478,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		txtLuong.setText(null);
 	}
 	public static void docDuLieuDatabaseVaoTable() throws RemoteException {
+		System.out.println("Doc");
 		List<NhanVien> listNV = new ArrayList<NhanVien>();
 		try {
 			listNV = nhanvien_dao.getTatCaNhanVien();
@@ -496,6 +497,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		
 	}
 	public static void xoaHetDL() {
+		System.out.println("Xoa");
 		DefaultTableModel dm = (DefaultTableModel) tableNhanVien.getModel();
 		dm.setRowCount(0);
 	}

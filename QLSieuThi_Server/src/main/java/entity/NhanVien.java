@@ -4,13 +4,13 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 
 
 @Entity
@@ -18,11 +18,11 @@ public class NhanVien implements Serializable{
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -6147278725209436098L;
+	private static final long serialVersionUID = 8452382776766015338L;
 	@Id
-	@Column(columnDefinition = "nchar(20)")
+	@Column(columnDefinition = "nvarchar(20)")
 	private String maNV;
-	@Column(columnDefinition = "nchar(50)")
+	@Column(columnDefinition = "nvarchar(50)")
 	private String tenNV;
 	private Boolean gioiTinh;
 	@Column(columnDefinition = "nchar(10)")
@@ -144,9 +144,9 @@ public class NhanVien implements Serializable{
 
 	@Override
 	public String toString() {
-		return "NhanVien [maNV=" + maNV.trim() + ", tenNV=" + tenNV + ", gioiTinh=" + gioiTinh + ", SDT=" + SDT + ", chucVu="
-				+ chucVu + ", luong=" + luong + ", CMND=" + CMND + ", ngaySinh=" + ngaySinh + ", diaChi=" + diaChi
-				+ ", email=" + email + ", trangThai=" + trangThai + ", taiKhoan + [userName= " + taiKhoan.getTenDN() + "password= " + taiKhoan.getMatKhau() + "]";
+		return "NhanVien [maNV=" + maNV.trim() + ", tenNV=" + tenNV.trim() + ", gioiTinh=" + gioiTinh + ", SDT=" + SDT.trim() + ", chucVu="
+				+ chucVu.trim() + ", luong=" + luong + ", CMND=" + CMND.trim() + ", ngaySinh=" + ngaySinh + ", diaChi=" + diaChi.trim()
+				+ ", email=" + email.trim() + ", trangThai=" + trangThai + ", taiKhoan + [userName= " + taiKhoan.getTenDN().trim() + "password= " + taiKhoan.getMatKhau().trim() + "]";
 	}
 
 	

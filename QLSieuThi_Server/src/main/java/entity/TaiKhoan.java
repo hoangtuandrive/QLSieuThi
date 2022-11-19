@@ -2,12 +2,12 @@ package entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.MapsId;
-import javax.persistence.OneToOne;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
 
 
 @Entity
@@ -22,9 +22,9 @@ public class TaiKhoan implements Serializable {
 	private String tenDN;
 	@OneToOne
 	@MapsId
-	@JoinColumn(name = "tenDN", columnDefinition = "nchar(20)")
+	@JoinColumn(name = "tenDN", columnDefinition = "nvarchar(20)")
 	private NhanVien maNV;
-	@Column(columnDefinition = "nchar(30)")
+	@Column(columnDefinition = "nvarchar(30)")
 	private String matKhau;
 
 	public String getTenDN() {

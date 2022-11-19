@@ -10,8 +10,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import dao.NhanVienDao;
-
-import impI.NhanVienImpI;
+import impI_Tuan.NhanVienImpI;
 
 
 public class ServerApp {
@@ -21,7 +20,7 @@ public class ServerApp {
 			System.setProperty("java.security.policy", "policy/policy.policy");
 			System.setSecurityManager(new SecurityManager());
 		}
-		String IP = "rmi://192.168.1.35:9999/";
+		String IP = "rmi://192.168.1.109:9999/";
 		try {
 			LocateRegistry.createRegistry(9999);
 
@@ -41,7 +40,7 @@ public class ServerApp {
 //		
 //		NhanVienDao nhanvien_dao = new NhanVienImpI(); // Remote Object
 //		
-//		context.bind("rmi://192.168.1.35:9999/NhanVien", nhanvien_dao);
+//		context.bind("rmi://192.168.1.109:9999/NhanVien", nhanvien_dao);
 //		
 //		System.out.println("Ready...");
 //		System.out.println(nhanvien_dao.getTatCaNhanVien());
