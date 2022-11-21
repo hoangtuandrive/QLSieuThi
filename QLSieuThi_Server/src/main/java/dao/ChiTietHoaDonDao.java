@@ -12,4 +12,5 @@ public interface ChiTietHoaDonDao extends Remote {
 	public boolean delete(String maSanPham,String maHoaDon) throws RemoteException;
 	public boolean updateSoLuong(ChiTietHoaDon cthd) throws RemoteException;
 	public List<ChiTietHoaDon> getCTHDTheoMaHDLenTable(String maHoaDon) throws RemoteException;
+	public boolean update(ChiTietHoaDon cthd) throws RemoteException;
 }

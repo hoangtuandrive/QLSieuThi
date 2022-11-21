@@ -10,7 +10,7 @@ import entity.NhanVien;
 
 public interface NhanVienDao extends Remote {
 	public boolean addNhanVien(NhanVien nv) throws RemoteException;
-	public  NhanVien getNhanVienById(String ma) throws RemoteException;
+	public NhanVien getNhanVienById(String ma) throws RemoteException;
 	public boolean updateNV(NhanVien nv) throws RemoteException;
 	public List<NhanVien> getTatCaNhanVien() throws RemoteException;
 	public boolean delete(String id) throws RemoteException;
@@ -27,4 +27,5 @@ public interface NhanVienDao extends Remote {
 	public SortedSet<String> getTatCaEmailNhanVien() throws RemoteException;
 	public SortedSet<Boolean> getTatCaTrangThaiNhanVien() throws RemoteException;	
 	public List<NhanVien> getTatCaNhanVienKhiAdd() throws RemoteException;
+	
 }

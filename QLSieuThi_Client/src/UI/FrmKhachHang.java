@@ -232,7 +232,9 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener, 
 		btnThem.setText("THÊM");
 		btnSua.setText("SỬA");
 		btnXoa.setText("XÓA");
-
+		
+		pnThongTin.setBackground(new Color(219, 243, 255));
+		pnChucNang.setBackground(new Color(219, 243, 255));
 		btnThem.setBackground(new Color(0, 148, 224));
 		btnThem.setForeground(Color.WHITE);
 		btnThem.setFocusPainted(false);
@@ -368,6 +370,7 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener, 
 			e.printStackTrace();
 		}
 
+		btnXoa.setEnabled(false);
 		cmbChon.addActionListener(this);
 		cmbTim.addActionListener(this);
 		btnTim.addActionListener(this);
@@ -377,7 +380,6 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener, 
 		
 		btnThem.addActionListener(this);
 		btnSua.addActionListener(this);
-		btnXoa.addActionListener(this);
 		btnTim.addActionListener(this);
 		tableKhachHang.addMouseListener(this);
 
@@ -429,12 +431,7 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener, 
 		/* Create and display the form */
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				try {
-					new GUI().setVisible(true);
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				new FrmDangNhap().setVisible(true);
 			}
 		});
 	}
@@ -478,7 +475,7 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener, 
 		txtDiaChi.setText(null);
 	}
 
-	public void docDuLieuDatabaseVaoTable() throws RemoteException {
+	public static void docDuLieuDatabaseVaoTable() throws RemoteException {
 		SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
 		List<KhachHang> listKH = new ArrayList<KhachHang>();
 		listKH = kh_dao.getTatCaKhachHang();
@@ -488,7 +485,7 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener, 
 					kh.getSDT().trim(), kh.getEmail().trim(), kh.getDiaChi().trim() });
 		}
 	}
-
+	
 	public static void xoaHetDL() {
 		DefaultTableModel dm = (DefaultTableModel) tableKhachHang.getModel();
 		dm.setRowCount(0);
@@ -850,66 +847,6 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener, 
 
 	}
 
-	private boolean validInput() {
-		// TODO Auto-generated method stub
-		String maKH = txtMaKhachHang.getText();
-		String tenKH = txtTenKhachHang.getText();
-		String sdt = txtSDT.getText();
-		String email = txtEmail.getText();
-		String diaChi = txtDiaChi.getText();
-		String cmnd = txtCMND.getText();
-
-		if (tenKH.trim().length() > 0) {
-			if (!(tenKH.matches("[^\\@\\!\\$\\^\\&\\*\\(\\)]+"))) {
-				JOptionPane.showMessageDialog(this, "Tên khách hàng không chứa ký tự đặc biệt", "Lỗi",
-						JOptionPane.ERROR_MESSAGE);
-				return false;
-			}
-		} else {
-			JOptionPane.showMessageDialog(this, "Tên khách hàng không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
-		if (sdt.trim().length() > 0) {
-			if (!(sdt.matches(
-					"^(0|\\+84)(\\s|\\.)?((3[2-9])|(5[689])|(7[06-9])|(8[1-689])|(9[0-46-9]))(\\d)(\\s|\\.)?(\\d{3})(\\s|\\.)?(\\d{3})$"))) {
-				JOptionPane.showMessageDialog(this, "Số điện thoại không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
-				return false;
-			}
-		} else {
-			JOptionPane.showMessageDialog(this, "Số điện thoại không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
-		if (cmnd.trim().length() > 0) {
-			if (!(cmnd.matches("\\d{9}"))) {
-				JOptionPane.showMessageDialog(this, "CMND không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
-				return false;
-			}
-		} else {
-			JOptionPane.showMessageDialog(this, "CMND không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
-		if (email.trim().length() > 0) {
-			if (!(email.matches("^[A-Za-z0-9]+[A-Za-z0-9]*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)$"))) {
-				JOptionPane.showMessageDialog(this, "Email không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
-				return false;
-			}
-		} else {
-			JOptionPane.showMessageDialog(this, "Email không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
-		if (diaChi.trim().length() > 0) {
-			if (!(diaChi.matches("[^\\@\\!\\$\\^\\&\\*\\(\\)]+"))) {
-				JOptionPane.showMessageDialog(this, "Địa chỉ không chứa ký tự đặc biệt", "Lỗi",
-						JOptionPane.ERROR_MESSAGE);
-				return false;
-			}
-		} else {
-			JOptionPane.showMessageDialog(this, "Địa chỉ không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
-		return true;
-	}
-
 	public static void docMaKhachHangVaoCmbTim() throws RemoteException {
 		cmbTim.removeAllItems();
 		SortedSet<String> list = kh_dao.getTatCaMaKhachHang();
@@ -981,5 +918,65 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener, 
 		for (String s : list) {
 			cmbTim.addItem(s.trim());
 		}
+	}
+	
+	private boolean validInput() {
+		// TODO Auto-generated method stub
+		String maKH = txtMaKhachHang.getText();
+		String tenKH = txtTenKhachHang.getText();
+		String sdt = txtSDT.getText();
+		String email = txtEmail.getText();
+		String diaChi = txtDiaChi.getText();
+		String cmnd = txtCMND.getText();
+
+		if (tenKH.trim().length() > 0) {
+			if (!(tenKH.matches("[^\\@\\!\\$\\^\\&\\*\\(\\)0-9]+"))) {
+				JOptionPane.showMessageDialog(this, "Tên khách hàng phải là ký tự chữ", "Lỗi",
+						JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Tên khách hàng không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (sdt.trim().length() > 0) {
+			if (!(sdt.matches(
+					"^(0|\\+84)(\\s|\\.)?((3[2-9])|(5[689])|(7[06-9])|(8[1-689])|(9[0-46-9]))(\\d)(\\s|\\.)?(\\d{3})(\\s|\\.)?(\\d{3})$"))) {
+				JOptionPane.showMessageDialog(this, "Số điện thoại không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Số điện thoại không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (cmnd.trim().length() > 0) {
+			if (!(cmnd.matches("\\d{9}"))) {
+				JOptionPane.showMessageDialog(this, "CMND không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "CMND không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (email.trim().length() > 0) {
+			if (!(email.matches("^[A-Za-z0-9]+[A-Za-z0-9]*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)$"))) {
+				JOptionPane.showMessageDialog(this, "Email không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Email không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (diaChi.trim().length() > 0) {
+			if (!(diaChi.matches("[^\\@\\!\\$\\^\\&\\*\\(\\)]+"))) {
+				JOptionPane.showMessageDialog(this, "Địa chỉ không chứa ký tự đặc biệt", "Lỗi",
+						JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Địa chỉ không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		return true;
 	}
 }

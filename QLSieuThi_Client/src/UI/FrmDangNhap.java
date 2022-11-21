@@ -15,6 +15,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -30,8 +31,14 @@ import javax.swing.JTextField;
 
 import com.formdev.flatlaf.FlatLightLaf;
 
+import dao.BanHangDao;
+import dao.ChiTietHoaDonDao;
+import dao.HoaDonDao;
+import dao.KhachHangDao;
 import dao.NhanVienDao;
+import dao.SanPhamDao;
 import dao.TaiKhoanDao;
+import entity.NhanVien;
 import entity.TaiKhoan;
 
 public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
@@ -42,6 +49,7 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 	private TaiKhoanDao taikhoan_dao;
 	private JLabel lblMK;
 	private JLabel lblTDN;
+	private NhanVienDao nhanvien_dao;
 	public static String IP = "rmi://192.168.1.109:9999/";
 
 	public FrmDangNhap() {
@@ -105,7 +113,6 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 		btnThoat.setBackground(new Color(0, 148, 224));
 		btnThoat.setForeground(Color.WHITE);
 		btnThoat.setFocusPainted(false);
-		
 
 		txtTenDangNhap.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		txtMatKhau.setFont(new Font("Tahoma", Font.PLAIN, 14));
@@ -122,9 +129,10 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 		btnThoat.addActionListener(this);
 		txtTenDangNhap.addKeyListener(this);
 		txtMatKhau.addKeyListener(this);
-		
+
 		try {
 			taikhoan_dao = (TaiKhoanDao) Naming.lookup(FrmDangNhap.IP + "taiKhoanDao");
+			nhanvien_dao = (NhanVienDao) Naming.lookup(FrmDangNhap.IP + "nhanVienDao");
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -135,7 +143,6 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 
 	public static void main(String[] args) {
@@ -178,8 +185,26 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		Object o = e.getSource();
-
 		if (o.equals(btnDangNhap)) {
+			// Kiểm tra lần đầu chạy
+			List<NhanVien> listNV;
+			try {
+				listNV = nhanvien_dao.getTatCaNhanVien();
+				if (listNV.size() == 0) {
+					createFirstAccount();
+					GUI gui;
+					gui = new GUI();
+					gui.setVisible(true);
+					gui.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+					gui.setLocationRelativeTo(null);
+					dispose();
+					return;
+				}
+			} catch (RemoteException e3) {
+				// TODO Auto-generated catch block
+				e3.printStackTrace();
+			}
+
 			String taikhoan = txtTenDangNhap.getText();
 			String matkhau = txtMatKhau.getText();
 
@@ -189,7 +214,8 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 				listTK = taikhoan_dao.getAllTaiKhoan();
 				for (TaiKhoan tk : listTK) {
 					if (tk.getTenDN().trim().equals(taikhoan) && tk.getMatKhau().trim().equals(matkhau)
-							|| txtTenDangNhap.getText().trim().equals("QL1001") && txtMatKhau.getText().trim().equals("123")) {
+							|| txtTenDangNhap.getText().trim().equals("QL1001")
+									&& txtMatKhau.getText().trim().equals("123")) {
 						flag = 1;
 						break;
 					}
@@ -240,6 +266,14 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 	}
 
 	public static String getTaiKhoan() {
-		return txtTenDangNhap.getText();
+		return txtTenDangNhap.getText().toString().trim();
+	}
+
+	public void createFirstAccount() throws RemoteException {
+		TaiKhoan t = new TaiKhoan("123", "123");
+		NhanVien nv = new NhanVien("QL1001", "Tuan A", true, "0929471420", "Quản Lý", 10000.00, "012345678",
+				new Date(2001 - 1900, 2 - 1, 28), "123 truong chinh", "hoangtuan@gmail.com", true, t);
+		t.setMaNV(nv);
+		nhanvien_dao.addNhanVien(nv);
 	}
 }

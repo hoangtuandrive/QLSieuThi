@@ -10,6 +10,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -21,6 +24,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.SortedSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -50,9 +54,15 @@ import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.toedter.calendar.JDateChooser;
 
+import dao.HoaDonDao;
+import dao.KhachHangDao;
+import dao.NhanVienDao;
+import dao.TaiKhoanDao;
+import entity.HoaDon;
+import entity.KhachHang;
+import entity.NhanVien;
 
-
-public class FrmHoaDon extends JFrame {
+public class FrmHoaDon extends JFrame implements ActionListener, MouseListener {
 
 	private static DefaultTableModel modelHoaDon;
 	private static JTable tableHoaDon;
@@ -73,8 +83,11 @@ public class FrmHoaDon extends JFrame {
 	private boolean sort;
 	private JButton btnHoaDon;
 	private boolean sortHoaDon;
+	private static KhachHangDao khachhang_dao;
+	private static NhanVienDao nhanvien_dao;
+	private static HoaDonDao hoadon_dao;
 
-	public JPanel createPanelHoaDon() {
+	public JPanel createPanelHoaDon() throws RemoteException {
 		// TODO Auto-generated constructor stub
 		FlatLightLaf.setup();
 		setTitle("FrmHoaDon");
@@ -88,8 +101,7 @@ public class FrmHoaDon extends JFrame {
 		Box bThongtin = Box.createHorizontalBox();
 		Box btim = Box.createHorizontalBox();
 
-		String[] colHeader = { "Mã Hóa Đơn", "Tên Khách Hàng", "Tên Nhân Viên", "Ngày Lập Hóa Đơn",
-				"Thành Tiền" };
+		String[] colHeader = { "Mã Hóa Đơn", "Tên Khách Hàng", "Tên Nhân Viên", "Ngày Lập Hóa Đơn", "Thành Tiền" };
 		modelHoaDon = new DefaultTableModel(colHeader, 0);
 		JScrollPane tblscroll = new JScrollPane(tableHoaDon);
 		tableHoaDon = new JTable(modelHoaDon) {
@@ -194,6 +206,15 @@ public class FrmHoaDon extends JFrame {
 		lblDoanhThu.setFont(new Font("Tahoma", Font.BOLD, 14));
 		txtDoanhThu.setFont(new Font("Tahoma", Font.BOLD, 24));
 
+		cmbTim.addActionListener(this);
+		cmbChon.addActionListener(this);
+		btnTim.addActionListener(this);
+		btnTim1.addActionListener(this);
+		btnSort.addActionListener(this);
+		btnHoaDon.addActionListener(this);
+
+		tableHoaDon.addMouseListener(this);
+
 		TableRowSorter<TableModel> sorter1 = new TableRowSorter<TableModel>(tableHoaDon.getModel());
 		tableHoaDon.setRowSorter(sorter1);
 
@@ -202,11 +223,362 @@ public class FrmHoaDon extends JFrame {
 		sorter1.setSortKeys(sortKeyss);
 		sortHoaDon = true;
 
+		try {
+			hoadon_dao = (HoaDonDao) Naming.lookup(FrmDangNhap.IP + "hoaDonDao");
+			khachhang_dao = (KhachHangDao) Naming.lookup(FrmDangNhap.IP + "khachHangDao");
+			nhanvien_dao = (NhanVienDao) Naming.lookup(FrmDangNhap.IP + "nhanVienDao");
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		docDuLieuDatabaseVaoTable();
+		docMaHoaDonVaoCmbTim();
 		return p;
 	}
 
 	public static void main(String[] args) throws RemoteException {
-		new GUI().setVisible(true);
+		new FrmDangNhap().setVisible(true);
 	}
 
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		Object o = e.getSource();
+		try {
+			if (o.equals(cmbChon)) {
+				if (cmbChon.getSelectedIndex() == 0) {
+					docMaHoaDonVaoCmbTim();
+				} else if (cmbChon.getSelectedIndex() == 1) {
+					docTenKhachHangVaoCmbTim();
+				} else if (cmbChon.getSelectedIndex() == 2) {
+					docTenNhanVienVaoCmbTim();
+				} else if (cmbChon.getSelectedIndex() == 3) {
+					docNgayLapHoaDonVaoCmbTim();
+				} else if (cmbChon.getSelectedIndex() == 4) {
+					docTongTienThanhToanVaoCmbTim();
+				}
+			}
+			if (o.equals(btnTim)) {
+				DefaultTableModel model = (DefaultTableModel) tableHoaDon.getModel();
+				model.setRowCount(0);
+				DecimalFormat df = new DecimalFormat("#,##0");
+				SimpleDateFormat date = new SimpleDateFormat("yyy-MM-dd");
+				if (cmbTim.getSelectedIndex() == 0) {
+					docDuLieuDatabaseVaoTable();
+				} else if (cmbChon.getSelectedIndex() == 0) {
+					String tim = cmbTim.getSelectedItem().toString().trim();
+					List<HoaDon> list = hoadon_dao.getTatCaHoaDonDaThanhToan();
+					for (HoaDon hd : list) {
+						if (hd.getMaHD().trim().equals(tim.trim())) {
+							KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH().trim());
+							NhanVien nv = nhanvien_dao.getNhanVienById(hd.getMaNV().getMaNV().trim());
+							modelHoaDon.addRow(new Object[] { hd.getMaHD(), kh.getTenKH().trim(), nv.getTenNV().trim(),
+									date.format(hd.getNgayLapHoaDon()), df.format(hd.getTongTien()) });
+
+						}
+					}
+				} else if (cmbChon.getSelectedIndex() == 1) {
+					String tim = cmbTim.getSelectedItem().toString().trim();
+					List<HoaDon> list = hoadon_dao.getTatCaHoaDonDaThanhToan();
+					for (HoaDon hd : list) {
+						KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH().trim());
+						if (kh.getTenKH().trim().equals(tim.trim())) {
+							NhanVien nv = nhanvien_dao.getNhanVienById(hd.getMaNV().getMaNV().trim());
+							modelHoaDon.addRow(new Object[] { hd.getMaHD(), kh.getTenKH().trim(), nv.getTenNV().trim(),
+									date.format(hd.getNgayLapHoaDon()), df.format(hd.getTongTien()) });
+						}
+					}
+				} else if (cmbChon.getSelectedIndex() == 2) {
+					String tim = cmbTim.getSelectedItem().toString().trim();
+					List<HoaDon> list = hoadon_dao.getTatCaHoaDonDaThanhToan();
+					for (HoaDon hd : list) {
+						NhanVien nv = nhanvien_dao.getNhanVienById(hd.getMaNV().getMaNV().trim());
+						if (nv.getTenNV().trim().equals(tim.trim())) {
+							KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH().trim());
+							modelHoaDon.addRow(new Object[] { hd.getMaHD(), kh.getTenKH().trim(), nv.getTenNV().trim(),
+									date.format(hd.getNgayLapHoaDon()), df.format(hd.getTongTien()) });
+						}
+					}
+				} else if (cmbChon.getSelectedIndex() == 3) {
+					String tim = cmbTim.getSelectedItem().toString().trim();
+					String[] a = tim.split("-");
+					Date d = new Date(Integer.parseInt(a[0]) - 1900, Integer.parseInt(a[1]) - 1,
+							Integer.parseInt(a[2]));
+					List<HoaDon> list = hoadon_dao.getTatCaHoaDonDaThanhToan();
+					for (HoaDon hd : list) {
+						if (hd.getNgayLapHoaDon().compareTo(d) == 0) {
+							KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH().trim());
+							NhanVien nv = nhanvien_dao.getNhanVienById(hd.getMaNV().getMaNV().trim());
+							modelHoaDon.addRow(new Object[] { hd.getMaHD(), kh.getTenKH().trim(), nv.getTenNV().trim(),
+									date.format(hd.getNgayLapHoaDon()), df.format(hd.getTongTien()) });
+						}
+					}
+				} else if (cmbChon.getSelectedIndex() == 4) {
+					String tim = cmbTim.getSelectedItem().toString().trim();
+					double d = Double.parseDouble(tim.replaceAll(",", "").trim());
+					List<HoaDon> list = hoadon_dao.getTatCaHoaDonDaThanhToan();
+					for (HoaDon hd : list) {
+						if (hd.getTongTien() == d) {
+							KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH().trim());
+							NhanVien nv = nhanvien_dao.getNhanVienById(hd.getMaNV().getMaNV().trim());
+							modelHoaDon.addRow(new Object[] { hd.getMaHD(), kh.getTenKH().trim(), nv.getTenNV().trim(),
+									date.format(hd.getNgayLapHoaDon()), df.format(hd.getTongTien()) });
+						}
+					}
+				}
+
+			}
+			if (o.equals(btnTim1)) {
+				DefaultTableModel dm = (DefaultTableModel) tableHoaDon.getModel();
+				dm.setRowCount(0);
+				Date start = txtNgayStart.getDate();
+				Date end = txtNgayEnd.getDate();
+				if (start != null && end != null) {
+					Date min = new Date(start.getYear(), start.getMonth(), start.getDate());
+					Date max = new Date(end.getYear(), end.getMonth(), end.getDate());
+					if (min.after(max)) {
+						JOptionPane.showMessageDialog(this, "Nhập khoảng ngày không hợp lệ, vui lòng nhập lại.", "Lỗi",
+								JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+				}
+				List<HoaDon> list = new ArrayList<HoaDon>();
+				list = hoadon_dao.getTatCaHoaDonDaThanhToan();
+				DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+				if (start != null) {
+					List<HoaDon> listTemp = new ArrayList<HoaDon>();
+					for (HoaDon hd : list) {
+						listTemp.add(hd);
+					}
+					list.clear();
+					for (HoaDon hd : listTemp) {
+						try {
+							String output = df.format(hd.getNgayLapHoaDon());
+							Date date = new SimpleDateFormat("yyyy-MM-dd").parse(output);
+							if (date.compareTo(start) >= 0) {
+								list.add(hd);
+							}
+						} catch (ParseException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}
+				if (end != null) {
+					List<HoaDon> listTemp = new ArrayList<HoaDon>();
+					for (HoaDon hd : list) {
+						listTemp.add(hd);
+					}
+					list.clear();
+					for (HoaDon hd : listTemp) {
+						try {
+							String output = df.format(hd.getNgayLapHoaDon());
+							Date date = new SimpleDateFormat("yyyy-MM-dd").parse(output);
+							if (date.compareTo(end) <= 0)
+								list.add(hd);
+						} catch (ParseException e1) {
+							e1.printStackTrace();
+						}
+					}
+					if (list.size() == 0) {
+						txtDoanhThu.setText("0.0 VNĐ");
+						JOptionPane.showMessageDialog(this, "Không có hóa đơn nào nằm trong khoảng ngày này.", "Lỗi",
+								JOptionPane.ERROR_MESSAGE);
+
+						return;
+					}
+					DecimalFormat money = new DecimalFormat("#,##0");
+					SimpleDateFormat date = new SimpleDateFormat("yyy-MM-dd");
+					double tongDoanhThu = 0;
+					for (HoaDon hd : list) {
+						KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH().trim());
+						NhanVien nv = nhanvien_dao.getNhanVienById(hd.getMaNV().getMaNV().trim());
+						modelHoaDon.addRow(new Object[] { hd.getMaHD(), kh.getTenKH().trim(), nv.getTenNV().trim(),
+								date.format(hd.getNgayLapHoaDon()), df.format(hd.getTongTien()) });
+						tongDoanhThu += hd.getTongTien();
+					}
+					if (tongDoanhThu == 0)
+						txtDoanhThu.setText("0.0 VNĐ");
+					else
+						txtDoanhThu.setText(money.format(tongDoanhThu) + " VNĐ");
+
+				}
+			}
+
+			if (o.equals(btnSort)) {
+				if (sort == true) {
+					TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableHoaDon.getModel());
+					tableHoaDon.setRowSorter(sorter);
+
+					List<RowSorter.SortKey> sortKeys = new ArrayList<>(50);
+					sortKeys.add(new RowSorter.SortKey(4, SortOrder.ASCENDING));
+					sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
+					sorter.setSortKeys(sortKeys);
+					sort = false;
+				} else {
+					TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableHoaDon.getModel());
+					tableHoaDon.setRowSorter(sorter);
+
+					List<RowSorter.SortKey> sortKeys = new ArrayList<>(50);
+					sortKeys.add(new RowSorter.SortKey(4, SortOrder.DESCENDING));
+					sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
+					sorter.setSortKeys(sortKeys);
+					sort = true;
+				}
+			}
+			if (o.equals(btnHoaDon)) {
+				if (sortHoaDon == true) {
+					TableRowSorter<TableModel> sorter1 = new TableRowSorter<TableModel>(tableHoaDon.getModel());
+					tableHoaDon.setRowSorter(sorter1);
+
+					List<RowSorter.SortKey> sortKeyss = new ArrayList<>(50);
+					sortKeyss.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
+					sorter1.setSortKeys(sortKeyss);
+					sortHoaDon = false;
+				} else {
+					TableRowSorter<TableModel> sorter1 = new TableRowSorter<TableModel>(tableHoaDon.getModel());
+					tableHoaDon.setRowSorter(sorter1);
+
+					List<RowSorter.SortKey> sortKeyss = new ArrayList<>(50);
+					sortKeyss.add(new RowSorter.SortKey(0, SortOrder.DESCENDING));
+					sorter1.setSortKeys(sortKeyss);
+					sortHoaDon = true;
+				}
+			}
+		} catch (RemoteException e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	public static void docDuLieuDatabaseVaoTable() throws RemoteException {
+		DefaultTableModel dm = (DefaultTableModel) tableHoaDon.getModel();
+		dm.setRowCount(0);
+		List<HoaDon> list = hoadon_dao.getTatCaHoaDonDaThanhToan();
+		DecimalFormat df = new DecimalFormat("#,##0");
+		SimpleDateFormat date = new SimpleDateFormat("yyy-MM-dd");
+		double tongDoanhThu = 0;
+		for (HoaDon hd : list) {
+			KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH().trim());
+			NhanVien nv = nhanvien_dao.getNhanVienById(hd.getMaNV().getMaNV().trim());
+			modelHoaDon.addRow(new Object[] { hd.getMaHD(), kh.getTenKH().trim(), nv.getTenNV().trim(),
+					date.format(hd.getNgayLapHoaDon()), df.format(hd.getTongTien()) });
+			tongDoanhThu += hd.getTongTien();
+		}
+		if (tongDoanhThu == 0)
+			txtDoanhThu.setText("0.0 VNĐ");
+		else
+			txtDoanhThu.setText(df.format(tongDoanhThu) + " VNĐ");
+	}
+
+	public static void docMaHoaDonVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = hoadon_dao.getTatCaMaHoaDon();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docTenNhanVienVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = hoadon_dao.getTatCaTenNhanVien();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	public static void docNgayLapHoaDonVaoCmbTim() throws RemoteException {
+		SimpleDateFormat date = new SimpleDateFormat("yyy-MM-dd");
+		cmbTim.removeAllItems();
+		SortedSet<Date> list = hoadon_dao.getTatCaNgayLapHoaDon();
+		cmbTim.addItem("");
+		for (Date s : list) {
+			cmbTim.addItem(date.format(s));
+		}
+	}
+
+	public static void docTongTienThanhToanVaoCmbTim() throws RemoteException {
+		DecimalFormat df = new DecimalFormat("#,##0");
+		cmbTim.removeAllItems();
+		SortedSet<Double> list = hoadon_dao.getTongTienThanhToan();
+		cmbTim.addItem("");
+		for (Double s : list) {
+			cmbTim.addItem(df.format(s));
+		}
+	}
+
+	public void sapXepTheoDoanhThu(List<HoaDon> list, boolean sort) {
+		Collections.sort(list, new Comparator<HoaDon>() {
+			@Override
+			public int compare(HoaDon o1, HoaDon o2) {
+				if (sort) {
+					if (o1 != null && o2 != null)
+						return Double.compare(o1.tinhTongTien(), o2.tinhTongTien());
+					return 0;
+				} else {
+					if (o1 != null && o2 != null)
+						return Double.compare(o2.tinhTongTien(), o1.tinhTongTien());
+					return 0;
+				}
+			}
+		});
+	}
+
+	public static void docTenKhachHangVaoCmbTim() throws RemoteException {
+		cmbTim.removeAllItems();
+		SortedSet<String> list = hoadon_dao.getTatCaTenKhachHang();
+		cmbTim.addItem("");
+		for (String s : list) {
+			cmbTim.addItem(s.trim());
+		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		int row = tableHoaDon.getSelectedRow();
+		if (e.getClickCount() == 2 && tableHoaDon.getSelectedRow() != -1) {
+			try {
+				HoaDon hd = hoadon_dao.getHoaDonTheoMaHD(tableHoaDon.getValueAt(row, 0).toString().trim());
+				KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH());
+				NhanVien nv = nhanvien_dao.getNhanVienById(hd.getMaNV().getMaNV());
+				new FrmChiTietHoaDon(kh.getTenKH(), nv.getTenNV(), hd.getMaHD(), hd.getNgayLapHoaDon())
+						.setVisible(true);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
 }

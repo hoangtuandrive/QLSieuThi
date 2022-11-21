@@ -4,10 +4,11 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 
 @Entity
@@ -34,7 +35,7 @@ public class KhachHang implements Serializable{
 	private String email;
 	private boolean gioHang;
 	
-	@OneToMany(mappedBy = "maKH")
+	@OneToMany(mappedBy = "maKH", fetch = FetchType.EAGER)
 	private List<HoaDon> dshd;
 
 	public String getMaKH() {
@@ -138,6 +139,19 @@ public class KhachHang implements Serializable{
 		this.diaChi = diaChi;
 		this.email = email;
 	}
+	
+	public KhachHang(String maKH, String tenKH, boolean gioiTinh, String sDT, String cMND, Date ngaySinh, String diaChi,
+			String email, boolean gioHang) {
+		this.maKH = maKH;
+		this.tenKH = tenKH;
+		this.gioiTinh = gioiTinh;
+		SDT = sDT;
+		CMND = cMND;
+		this.ngaySinh = ngaySinh;
+		this.diaChi = diaChi;
+		this.email = email;
+		this.gioHang = gioHang;
+	}
 
 	public KhachHang(String maKH, String tenKH ,String sDT) {
 		this.maKH = maKH;
@@ -160,7 +174,5 @@ public class KhachHang implements Serializable{
 		super();
 		// TODO Auto-generated constructor stub
 	}
-	
-	
 
 }

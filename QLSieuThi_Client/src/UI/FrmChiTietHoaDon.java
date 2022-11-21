@@ -10,6 +10,9 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileOutputStream;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
@@ -37,6 +40,15 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 
 import com.formdev.flatlaf.FlatLightLaf;
+
+import dao.BanHangDao;
+import dao.ChiTietHoaDonDao;
+import dao.HoaDonDao;
+import dao.KhachHangDao;
+import dao.NhanVienDao;
+import dao.SanPhamDao;
+import entity.ChiTietHoaDon;
+import entity.SanPham;
 
 public class FrmChiTietHoaDon extends JFrame {
 
@@ -83,9 +95,11 @@ public class FrmChiTietHoaDon extends JFrame {
 	private JTextField pVienDuoi;
 	private JButton btnIn;
 	private Box b3;
+	private ChiTietHoaDonDao cthd_dao;
+	private SanPhamDao sanpham_dao;
 
 
-	public FrmChiTietHoaDon(String tenKH, String tenNV, String maHD, Date ngayLapHoaDon) {
+	public FrmChiTietHoaDon(String tenKH, String tenNV, String maHD, Date ngayLapHoaDon) throws RemoteException {
 		// TODO Auto-generated constructor stub
 		
 		FlatLightLaf.setup();
@@ -285,11 +299,48 @@ public class FrmChiTietHoaDon extends JFrame {
 		b1.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
 		b2.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
 		b3.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
+		
+		try {
+			cthd_dao = (ChiTietHoaDonDao) Naming.lookup(FrmDangNhap.IP + "chiTietHoaDonDao");
+			sanpham_dao = (SanPhamDao) Naming.lookup(FrmDangNhap.IP + "sanPhamDao");
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// Bảng cthd
+		Double thanhTien = 0.0;
+		List<ChiTietHoaDon> listCTHD = cthd_dao.getCTHDTheoMaHDLenTable(maHD);
+		DecimalFormat df = new DecimalFormat("#,##0");
+		if (listCTHD != null) {
+			for (ChiTietHoaDon cthd : listCTHD) {
+				SanPham sp = sanpham_dao.getSanPhamByMa(cthd.getMaSP().getMaSP());
+//				modelCTHD.addRow(new Object[] { cthd.getMaLinhKien().getMaLK().trim(),
+//						cthd.getMaLinhKien().getTenLK().trim(), cthd.getMaLinhKien().getLoaiHang().trim(),
+//						cthd.getMaLinhKien().getNhaCungCap().trim(), df.format(cthd.getMaLinhKien().getDonGia()),
+//						cthd.getSoLuong(), df.format(cthd.getThanhTien()) });
+				modelCTHD.addRow(new Object[] { sp.getMaSP().trim(),
+						sp.getTenSP().trim(), sp.getLoaiHang().trim(),
+						sp.getNhaCungCap().trim(), df.format(sp.getDonGia()),
+						cthd.getSoLuong(), df.format(cthd.getThanhTien()) });
+				 thanhTien += cthd.getThanhTien();
+			}
+		}
+		if (thanhTien == 0)
+			txtThanhTien.setText("0.0 VNĐ");
+		else
+			txtThanhTien.setText(df.format(thanhTien) + " VNĐ");
 	}
 
 	public static void main(String[] args) throws RemoteException {
 		// TODO Auto-generated method stub
-		new GUI().setVisible(true);
+		new FrmDangNhap().setVisible(true);
 	}
 
 

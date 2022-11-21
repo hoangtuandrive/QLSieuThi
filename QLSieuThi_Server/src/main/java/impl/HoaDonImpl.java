@@ -5,10 +5,13 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.transaction.Transactional;
 import dao.HoaDonDao;
 import entity.ChiTietHoaDon;
 import entity.HoaDon;
@@ -42,14 +45,14 @@ public class HoaDonImpl extends UnicastRemoteObject implements HoaDonDao {
 		return null;
 	}
 
+	@Transactional
 	@Override
 	public List<HoaDon> getTatCaHoaDonChuaTinhTien() throws RemoteException {
 		EntityTransaction tr = em.getTransaction();
 		List<HoaDon> list = new ArrayList<HoaDon>();
 		try {
 			tr.begin();
-			String sql = "select hd.maHD,hd.maNV,hd.maKH,hd.ngayLapHoaDon,kh.SDT,kh.tenKH\r\n"
-					+ "from HoaDon hd join KhachHang kh on hd.maKH = kh.maKH\r\n" + " where tongTienThanhToan is NULL";
+			String sql = "select * from HoaDon where tongTienThanhToan=0"; 
 			em.clear();
 			list = em.createNativeQuery(sql, HoaDon.class).getResultList();
 			tr.commit();
@@ -67,7 +70,7 @@ public class HoaDonImpl extends UnicastRemoteObject implements HoaDonDao {
 		try {
 			tr.begin();
 			String sql = "select hd.maHD,hd.maNV,hd.maKH,hd.ngayLapHoaDon,kh.SDT,kh.tenKH\r\n"
-					+ "from HoaDon hd join KhachHang kh on hd.maKH = kh.maKH\r\n" + " where tongTienThanhToan is NULL";
+					+ "from HoaDon hd join KhachHang kh on hd.maKH = kh.maKH\r\n" + " where tongTienThanhToan=0";
 			em.clear();
 			NhanVien nv = (NhanVien) em.createNativeQuery(sql, NhanVien.class).getSingleResult();
 			tr.commit();
@@ -79,17 +82,19 @@ public class HoaDonImpl extends UnicastRemoteObject implements HoaDonDao {
 		return null;
 	}
 
+	
 	@Override
 	public HoaDon getHoaDonChuaTinhTienDeThanhToan(String maKH_thanhtoan) throws RemoteException {
 		EntityTransaction tr = em.getTransaction();
 		HoaDon hd = new HoaDon();
 		try {
 			tr.begin();
-			String sql = "select hd.maHD, hd.maNV, hd.maKH, hd.ngayLapHoaDon, kh.SDT, cthd.maHD, sp.maSP, sp.tenSP, "
-					+ "sp.loaiHang, sp.nhaCungCap, cthd.soLuong, cthd.giaTien, kh.tenKH \r\n"
-					+ "from HoaDon hd left join ChiTietHoaDon cthd on hd.maHD = cthd.maHD \r\n"
-					+ "left join SanPham sp on cthd.maSP = sp.maSP \r\n"
-					+ "join KhachHang kh on hd.maKH = kh.maKH \r\n" + "where tongTienThanhToan is NULL and hd.maKH = ?";
+//			String sql = "select hd.maHD, hd.maNV, hd.maKH, hd.ngayLapHoaDon, kh.SDT, cthd.maHD, sp.maSP, sp.tenSP, "
+//					+ "sp.loaiHang, sp.nhaCungCap, cthd.soLuong, cthd.giaTien, kh.tenKH \r\n"
+//					+ "from HoaDon hd left join ChiTietHoaDon cthd on hd.maHD = cthd.maHD \r\n"
+//					+ "left join SanPham sp on cthd.maSP = sp.maSP \r\n" + "join KhachHang kh on hd.maKH = kh.maKH \r\n"
+//					+ "where tongTienThanhToan=0 and hd.maKH = ?";
+			String sql = "select HoaDon from HoaDon where tongTienThanhToan=0 and hd.maKH = ?1"; 
 			em.clear();
 			hd = (HoaDon) em.createNativeQuery(sql, HoaDon.class).setParameter(1, maKH_thanhtoan).getSingleResult();
 			tr.commit();
@@ -107,9 +112,7 @@ public class HoaDonImpl extends UnicastRemoteObject implements HoaDonDao {
 		List<HoaDon> list = new ArrayList<HoaDon>();
 		try {
 			tr.begin();
-			String sql = "select hd.maHD,hd.maKH,k.SDT,k.tenKH,hd.maNV,nv.tenNV,hd.ngayLapHoaDon,hd.tongTienThanhToan\r\n"
-					+ "from HoaDon hd \r\n" + "join KhachHang k on hd.maKH = k.maKH\r\n"
-					+ "join NhanVien nv on nv.maNV = hd.maNV\r\n" + "where tongTienThanhToan is not NULL";
+			String sql = "select * from HoaDon where tongTienThanhToan>0";
 			em.clear();
 			list = em.createNativeQuery(sql, HoaDon.class).getResultList();
 			tr.commit();
@@ -142,17 +145,27 @@ public class HoaDonImpl extends UnicastRemoteObject implements HoaDonDao {
 
 	@Override
 	public HoaDon getHoaDonTheoMaHD(String maHoaDon) throws RemoteException {
+		em.clear();
+		return em.createQuery("select hd from HoaDon hd where hd.maHD = :x", HoaDon.class).setParameter("x", maHoaDon)
+				.getSingleResult();
+	}
+
+	@Override
+	public SortedSet<String> getTatCaTenKhachHang() throws RemoteException {
 		EntityTransaction tr = em.getTransaction();
-		HoaDon hd = new HoaDon();
+		List<HoaDon> list = new ArrayList<HoaDon>();
 		try {
 			tr.begin();
-			String sql = "select hd.maHD,hd.maKH,k.SDT,k.tenKH,hd.maNV,nv.tenNV,hd.ngayLapHoaDon\r\n"
-					+ "from HoaDon hd \r\n" + "join KhachHang k on hd.maKH = k.maKH\r\n"
-					+ "join NhanVien nv on nv.maNV = hd.maNV\r\n" + "where maHD = ?1";
+			String sql = "select * from HoaDon where tongTienThanhToan>0";
 			em.clear();
-			hd = (HoaDon) em.createNativeQuery(sql, HoaDon.class).setParameter(1, maHoaDon).getSingleResult();
+			list = em.createNativeQuery(sql, HoaDon.class).getResultList();
 			tr.commit();
-			return hd;
+			List<KhachHang> listKhachHang = new ArrayList<>();
+			list.forEach((obj) -> listKhachHang.add(obj.getMaKH()));
+			List<String> listString = new ArrayList<>();
+			listKhachHang.forEach((obj) -> listString.add(obj.getTenKH()));
+			SortedSet<String> uniqueList = new TreeSet<String>(listString);
+			return uniqueList;
 		} catch (Exception e) {
 			e.printStackTrace();
 			tr.rollback();
@@ -161,22 +174,19 @@ public class HoaDonImpl extends UnicastRemoteObject implements HoaDonDao {
 	}
 
 	@Override
-	public List<String> getTatCaTenKhachHang() throws RemoteException {
+	public SortedSet<String> getTatCaMaHoaDon() throws RemoteException {
 		EntityTransaction tr = em.getTransaction();
-//		List<KhachHang> listKH = new ArrayList<KhachHang>();
-		List<String> list = new ArrayList<String>();
+		List<HoaDon> list = new ArrayList<HoaDon>();
 		try {
 			tr.begin();
-			String sql = "select distinct kh.tenKH from HoaDon hd join KhachHang kh on hd.maKH=kh.maKH where hd.tongTienThanhToan is NOT NULL";
+			String sql = "select * from HoaDon where tongTienThanhToan>0";
 			em.clear();
-			list = em.createNativeQuery(sql).getResultList();
+			list = em.createNativeQuery(sql, HoaDon.class).getResultList();
 			tr.commit();
-
-//			List<String> list = new ArrayList<>(listKH.size());
-//			for (KhachHang kh : listKH) {
-//			    list.add(kh.getMaKH());
-//			}
-			return list;
+			List<String> listString = new ArrayList<>();
+			list.forEach((obj) -> listString.add(obj.getMaHD()));
+			SortedSet<String> uniqueList = new TreeSet<String>(listString);
+			return uniqueList;
 		} catch (Exception e) {
 			e.printStackTrace();
 			tr.rollback();
@@ -185,16 +195,21 @@ public class HoaDonImpl extends UnicastRemoteObject implements HoaDonDao {
 	}
 
 	@Override
-	public List<String> getTatCaMaHoaDon() throws RemoteException {
+	public SortedSet<String> getTatCaTenNhanVien() throws RemoteException {
 		EntityTransaction tr = em.getTransaction();
-		List<String> list = new ArrayList<String>();
+		List<HoaDon> list = new ArrayList<HoaDon>();
 		try {
 			tr.begin();
-			String sql = "select distinct maHD from HoaDon where tongTienThanhToan is NOT NULL";
+			String sql = "select * from HoaDon where tongTienThanhToan>0";
 			em.clear();
-			list = em.createNativeQuery(sql).getResultList();
+			list = em.createNativeQuery(sql, HoaDon.class).getResultList();
 			tr.commit();
-			return list;
+			List<NhanVien> listNhanVien = new ArrayList<>();
+			list.forEach((obj) -> listNhanVien.add(obj.getMaNV()));
+			List<String> listString = new ArrayList<>();
+			listNhanVien.forEach((obj) -> listString.add(obj.getTenNV()));
+			SortedSet<String> uniqueList = new TreeSet<String>(listString);
+			return uniqueList;
 		} catch (Exception e) {
 			e.printStackTrace();
 			tr.rollback();
@@ -203,16 +218,19 @@ public class HoaDonImpl extends UnicastRemoteObject implements HoaDonDao {
 	}
 
 	@Override
-	public List<String> getTatCaTenNhanVien() throws RemoteException {
+	public SortedSet<Date> getTatCaNgayLapHoaDon() throws RemoteException {
 		EntityTransaction tr = em.getTransaction();
-		List<String> list = new ArrayList<String>();
+		List<HoaDon> list = new ArrayList<HoaDon>();
 		try {
 			tr.begin();
-			String sql = "select distinct nv.tenNV from HoaDon hd join NhanVien nv where hd.maNV=kh.maNV where hd.tongTienThanhToan is NOT NULL";
+			String sql = "select * from HoaDon where tongTienThanhToan>0";
 			em.clear();
-			list = em.createNativeQuery(sql).getResultList();
+			list = em.createNativeQuery(sql, HoaDon.class).getResultList();
 			tr.commit();
-			return list;
+			List<Date> listDate = new ArrayList<>();
+			list.forEach((obj) -> listDate.add(obj.getNgayLapHoaDon()));
+			SortedSet<Date> uniqueList = new TreeSet<Date>(listDate);
+			return uniqueList;
 		} catch (Exception e) {
 			e.printStackTrace();
 			tr.rollback();
@@ -221,34 +239,19 @@ public class HoaDonImpl extends UnicastRemoteObject implements HoaDonDao {
 	}
 
 	@Override
-	public List<Date> getTatCaNgayLapHoaDon() throws RemoteException {
+	public SortedSet<Double> getTongTienThanhToan() throws RemoteException {
 		EntityTransaction tr = em.getTransaction();
-		List<Date> list = new ArrayList<Date>();
+		List<HoaDon> list = new ArrayList<HoaDon>();
 		try {
 			tr.begin();
-			String sql = "select distinct ngayLapHoaDon from HoaDon where tongTienThanhToan is NOT NULL";
+			String sql = "select * from HoaDon where tongTienThanhToan>0";
 			em.clear();
-			list = em.createNativeQuery(sql).getResultList();
+			list = em.createNativeQuery(sql, HoaDon.class).getResultList();
 			tr.commit();
-			return list;
-		} catch (Exception e) {
-			e.printStackTrace();
-			tr.rollback();
-		}
-		return null;
-	}
-
-	@Override
-	public List<Double> getTatCaLuongNhanVien() throws RemoteException {
-		EntityTransaction tr = em.getTransaction();
-		List<Double> list = new ArrayList<Double>();
-		try {
-			tr.begin();
-			String sql = "select distinct tongTienThanhToan from HoaDon where tongTienThanhToan is NOT NULL";
-			em.clear();
-			list = em.createNativeQuery(sql).getResultList();
-			tr.commit();
-			return list;
+			List<Double> listDouble = new ArrayList<>();
+			list.forEach((obj) -> listDouble.add(obj.getTongTien()));
+			SortedSet<Double> uniqueList = new TreeSet<Double>(listDouble);
+			return uniqueList;
 		} catch (Exception e) {
 			e.printStackTrace();
 			tr.rollback();

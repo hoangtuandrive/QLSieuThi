@@ -91,6 +91,8 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		btnSua = new javax.swing.JButton();
 		btnXoa = new javax.swing.JButton();
 
+		pnThongTin.setBackground(new Color(219, 243, 255));
+		pnChucNang.setBackground(new Color(219, 243, 255));
 		btnThem.setBackground(new Color(0, 148, 224));
 		btnThem.setForeground(Color.WHITE);
 		btnThem.setFocusPainted(false);
@@ -425,6 +427,18 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		String xacDinhDangNhap = FrmDangNhap.getTaiKhoan();
+		if (xacDinhDangNhap.substring(0, 2).equals("QL"))
+			isQuanLy = true;
+		else
+			isQuanLy = false;
+		
+		if (!isQuanLy) {
+			btnThem.setEnabled(false);
+			btnSua.setEnabled(false);
+			btnXoa.setEnabled(false);
+		}
 
 		docDuLieuDatabaseVaoTable();
 		btnThem.addActionListener(this);
@@ -506,7 +520,6 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 	}
 
 	public static void xoaHetDL() {
-		System.out.println("Xoa");
 		DefaultTableModel dm = (DefaultTableModel) tableNhanVien.getModel();
 		dm.setRowCount(0);
 	}
@@ -568,21 +581,21 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 			if (!validInput()) {
 				return;
 			} else {
-				String maNV;
+				String maNV="";
 				List<NhanVien> listNV = new ArrayList<NhanVien>();
 				try {
-					listNV = nhanvien_dao.getTatCaNhanVienKhiAdd();
+					listNV = nhanvien_dao.getTatCaNhanVien();
 				} catch (RemoteException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				if (listNV.size() == 0)
-					maNV = "NV1001";
-				else {
-					String maNVCuoi = listNV.get(listNV.size() - 1).getMaNV().trim();
-					int layMaSo = Integer.parseInt(maNVCuoi.substring(2, maNVCuoi.length()));
-					maNV = "NV" + (layMaSo + 1);
-				}
+//				if (listNV.size() == 0)
+//					maNV = "NV1001";
+//				else {
+//					String maNVCuoi = listNV.get(listNV.size() - 1).getMaNV().trim();
+//					int layMaSo = Integer.parseInt(maNVCuoi.substring(2, maNVCuoi.length()));
+//					maNV = "NV" + (layMaSo + 1);
+//				}
 				String tenNV = txtTen.getText();
 				String gioiTinh = cmbGioiTinh.getSelectedItem().toString();
 				String CMND = txtCMND.getText();
@@ -599,9 +612,19 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 						if (listNV.size() == 0)
 							maNV = "NV1001";
 						else {
-							String maNVCuoi = listNV.get(listNV.size() - 1).getMaNV().trim();
+							String maNVCuoi = listNV.get(listNV.size()-1).getMaNV().trim();
 							int layMaSo = Integer.parseInt(maNVCuoi.substring(2, maNVCuoi.length()));
 							maNV = "NV" + (layMaSo + 1);
+							try {
+								SortedSet<String> listMa = nhanvien_dao.getTatCaMaNhanVien();
+								if(listMa.contains(maNV)) {
+									System.out.println("check");
+									maNV = "NV" + (layMaSo + 2);
+								}
+							} catch (RemoteException e3) {
+								// TODO Auto-generated catch block
+								e3.printStackTrace();
+							}
 						}
 					else if (listNV.size() == 0)
 						maNV = "QL1001";
@@ -609,7 +632,18 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 						String maNVCuoi = listNV.get(listNV.size() - 1).getMaNV().trim();
 						int layMaSo = Integer.parseInt(maNVCuoi.substring(2, maNVCuoi.length()));
 						maNV = "QL" + (layMaSo + 1);
+						try {
+							SortedSet<String> listMa = nhanvien_dao.getTatCaMaNhanVien();
+							if(listMa.contains(maNV)) {
+								System.out.println("check");
+								maNV = "QL" + (layMaSo + 2);
+							}
+						} catch (RemoteException e3) {
+							// TODO Auto-generated catch block
+							e3.printStackTrace();
+						}
 					}
+					System.out.println(maNV);
 					TaiKhoan tk = new TaiKhoan(maNV, "123");
 					NhanVien nv = new NhanVien(maNV, tenNV, gioiTinh == "Nam" ? true : false, SDT, chucVu, luong, CMND,
 							date, diaChi, email, true, tk);
@@ -617,11 +651,11 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 
 					try {
 						nhanvien_dao.addNhanVien(nv);
-						JOptionPane.showMessageDialog(null, "Thanh Cong");
+						JOptionPane.showMessageDialog(null, "Thành Công");
 					} catch (RemoteException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
-						JOptionPane.showMessageDialog(null, "That Bai");
+						JOptionPane.showMessageDialog(null, "Thất Bại");
 					}
 					try {
 						tk_dao.create(tk);
@@ -1053,8 +1087,8 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 		String cmnd = txtCMND.getText();
 
 		if (ten.trim().length() > 0) {
-			if (!(ten.matches("[^\\@\\!\\$\\^\\&\\*\\(\\)]+"))) {
-				JOptionPane.showMessageDialog(this, "Tên nhân viên không chứa ký tự đặc biệt", "Lỗi",
+			if (!(ten.matches("[^\\@\\!\\$\\^\\&\\*\\(\\)0-9]+"))) {
+				JOptionPane.showMessageDialog(this, "Tên nhân viên phải là ký tự chữ", "Lỗi",
 						JOptionPane.ERROR_MESSAGE);
 				return false;
 			}

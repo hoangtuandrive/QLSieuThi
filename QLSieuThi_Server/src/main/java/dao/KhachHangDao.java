@@ -23,4 +23,6 @@ public interface KhachHangDao extends Remote {
 	public SortedSet<Date> getTatCaNgaySinhKhachHang() throws RemoteException;
 	public SortedSet<String> getTatCaDiaChiKhachHang() throws RemoteException;
 	public SortedSet<String> getTatCaEmailKhachHang() throws RemoteException;
+	public KhachHang getKhachHangBySdt(String sdt) throws RemoteException;
+	public KhachHang getKhachHangByMa(String ma) throws RemoteException;
 }

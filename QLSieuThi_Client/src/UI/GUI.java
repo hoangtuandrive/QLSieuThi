@@ -14,6 +14,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -34,6 +37,15 @@ import javax.swing.plaf.basic.BasicTabbedPaneUI;
 
 import com.formdev.flatlaf.FlatLightLaf;
 
+import entity.NhanVien;
+import jakarta.persistence.NoResultException;
+import dao.BanHangDao;
+import dao.ChiTietHoaDonDao;
+import dao.HoaDonDao;
+import dao.KhachHangDao;
+import dao.NhanVienDao;
+import dao.SanPhamDao;
+
 public class GUI extends JFrame implements ActionListener, MouseListener {
 	private JLabel lblThoiGian;
 	private JLabel txtThoiGian;
@@ -42,13 +54,16 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 	private JLabel txtMaNhanVien;
 	private JLabel lblTenNhanVien;
 	private JLabel txtTenNhanVien;
+	private NhanVienDao nhanvien_dao;
 
 	public GUI() throws RemoteException {
 		FlatLightLaf.setup();
 		setTitle("QUẢN LÝ SIÊU THỊ");
-		setResizable(false);
+		setResizable(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setExtendedState(MAXIMIZED_VERT);
+		Dimension DimMax = Toolkit.getDefaultToolkit().getScreenSize();
+		setMaximumSize(DimMax);
+		setExtendedState(MAXIMIZED_BOTH); 
 		setSize(1700, 980);
 		setLocationRelativeTo(null);
 		UIManager.put("TabbedPane.selected", new Color(50, 190, 255));
@@ -101,7 +116,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 		return tabbedPane;
 	}
 
-	public JPanel createPanelTrangChu() {
+	public JPanel createPanelTrangChu() throws RemoteException{
 		
 		JPanel pnlContentPane = new JPanel();
 
@@ -118,23 +133,23 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 
 		ImageIcon imageIcon = new ImageIcon("image/hinhnen.jpg");
 		Image image = imageIcon.getImage();
-		Image imageResize = image.getScaledInstance(1450, 700, Image.SCALE_SMOOTH);
+		Image imageResize = image.getScaledInstance(1450, 550, Image.SCALE_SMOOTH);
 		JLabel lblHinhNen = new JLabel(new ImageIcon(imageResize));
-		lblHinhNen.setBounds(10, 50, 1450, 700);
+		lblHinhNen.setBounds(10, 50, 1450, 550);
 		pnlContentPane.add(lblHinhNen);
 
 		lblDangXuat = new JLabel("<HTML><U>ĐĂNG XUẤT</U></HTML>");
 		lblDangXuat.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		lblDangXuat.setFont(new Font("Tahoma", Font.ITALIC, 20));
-		lblDangXuat.setBounds(1350, 0, 150, 42);
+		lblDangXuat.setBounds(1200, 0, 150, 42);
 		pnlContentPane.add(lblDangXuat);
 
 		lblMaNhanVien = new JLabel("MÃ NHÂN VIÊN: ");
 		lblMaNhanVien.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		lblMaNhanVien.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lblMaNhanVien.setBounds(50, 800, 200, 42);
+		lblMaNhanVien.setBounds(50, 670, 200, 42);
 		txtMaNhanVien = new JLabel();
-		txtMaNhanVien.setBounds(250, 800, 200, 42);
+		txtMaNhanVien.setBounds(250, 670, 200, 42);
 		txtMaNhanVien.setHorizontalAlignment(JLabel.LEFT);
 		txtMaNhanVien.setFont(new Font("Tahoma", Font.BOLD, 20));
 		pnlContentPane.add(lblMaNhanVien);
@@ -143,10 +158,10 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 		lblTenNhanVien = new JLabel("TÊN NHÂN VIÊN: ");
 		lblTenNhanVien.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		lblTenNhanVien.setFont(new Font("Tahoma", Font.BOLD, 20));
-		lblTenNhanVien.setBounds(50, 850, 200, 42);
+		lblTenNhanVien.setBounds(50, 720, 200, 42);
 		txtTenNhanVien = new JLabel("QL1001");
 		txtTenNhanVien = new JLabel();
-		txtTenNhanVien.setBounds(250, 850, 500, 42);
+		txtTenNhanVien.setBounds(250, 720, 500, 42);
 		txtTenNhanVien.setHorizontalAlignment(JLabel.LEFT);
 		txtTenNhanVien.setFont(new Font("Tahoma", Font.BOLD, 20));
 		pnlContentPane.add(lblTenNhanVien);
@@ -155,9 +170,9 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 		lblThoiGian = new JLabel("THỜI GIAN HIỆN TẠI:");
 		lblThoiGian.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		lblThoiGian.setFont(new Font("Tahoma", Font.ITALIC, 20));
-		lblThoiGian.setBounds(950, 850, 400, 42);
+		lblThoiGian.setBounds(750, 720, 400, 42);
 		txtThoiGian = new JLabel();
-		txtThoiGian.setBounds(1180, 850, 400, 42);
+		txtThoiGian.setBounds(1010, 720, 400, 42);
 		txtThoiGian.setHorizontalAlignment(JLabel.LEFT);
 		txtThoiGian.setFont(new Font("Tahoma", Font.ITALIC, 20));
 
@@ -173,7 +188,40 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 		t.start();
 		pnlContentPane.add(lblThoiGian);
 		pnlContentPane.add(txtThoiGian);
-
+		
+		try {
+			nhanvien_dao = (NhanVienDao) Naming.lookup(FrmDangNhap.IP + "nhanVienDao");
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		NhanVien nv = new NhanVien();
+		try {
+			nv = nhanvien_dao.getNhanVienById(FrmDangNhap.getTaiKhoan());
+			txtMaNhanVien.setText(FrmDangNhap.getTaiKhoan());
+			try {
+				txtTenNhanVien.setText(nv.getTenNV());
+			} catch (NullPointerException e) {
+				txtMaNhanVien.setText("QL1001");
+				txtTenNhanVien.setText("Tuan A");
+			}
+		} catch (RemoteException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (NoResultException e2){
+			nv = nhanvien_dao.getNhanVienById("QL1001");
+			txtMaNhanVien.setText("QL1001");
+			txtTenNhanVien.setText("Tuan A");
+		}
+		
+	
 		
 		pnlContentPane.setBackground(new Color(255, 255, 255));
 		lblDangXuat.addMouseListener(this);
@@ -248,12 +296,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 		}
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				try {
-					new GUI().setVisible(true);
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				new FrmDangNhap().setVisible(true);
 			}
 		});
 	}

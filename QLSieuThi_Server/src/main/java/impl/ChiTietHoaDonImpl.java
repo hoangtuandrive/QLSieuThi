@@ -5,8 +5,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 
 import dao.ChiTietHoaDonDao;
 import entity.ChiTietHoaDon;
@@ -52,6 +52,22 @@ public class ChiTietHoaDonImpl extends UnicastRemoteObject implements ChiTietHoa
 		}
 		return false;
 	}
+	
+
+	@Override
+	public boolean update(ChiTietHoaDon cthd) throws RemoteException {
+		EntityTransaction tr = em.getTransaction();
+		try {
+			tr.begin();
+			em.merge(cthd);
+			tr.commit();
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			tr.rollback();
+		}
+		return false;
+	}
 
 	@Override
 	public boolean delete(String maSP, String maHoaDon) throws RemoteException {
@@ -74,9 +90,10 @@ public class ChiTietHoaDonImpl extends UnicastRemoteObject implements ChiTietHoa
 		EntityTransaction tr=em.getTransaction();
 		try {
 			tr.begin();
-			String sql="update ChiTietHoaDon set soLuong=?1, thanhTien=?2 where maHD=?3 and maSP=?4";
-			em.createNativeQuery(sql, HoaDon.class).setParameter(1, cthd.getSoLuong()).setParameter(2, cthd.getThanhTien())
-			.setParameter(3, cthd.getMaHoaDon()).setParameter(4, cthd.getMaSP()).executeUpdate();
+//			String sql="update ChiTietHoaDon set soLuong=?1, thanhTien=?2 where maHD=?3 and maSP=?4";
+//			em.createNativeQuery(sql, HoaDon.class).setParameter(1, cthd.getSoLuong()).setParameter(2, cthd.getThanhTien())
+//			.setParameter(3, cthd.getMaHoaDon()).setParameter(4, cthd.getMaSP()).executeUpdate();
+			em.merge(cthd);
 			tr.commit();
 			return true;
 		} catch (Exception e) {
@@ -92,17 +109,17 @@ public class ChiTietHoaDonImpl extends UnicastRemoteObject implements ChiTietHoa
 		List<ChiTietHoaDon> list = new ArrayList<ChiTietHoaDon>();
 		try {
 			tr.begin();
-			String sql = "select sp.maSP,sp.tenSP,sp.loaiHang,sp.nhaCungCap,ct.soLuong,sp.donGia,ct.thanhTien,ct.maHD\r\n" + 
-					"from ChiTietHoaDon ct join SanPham sp on ct.maSP = sp.maSP\r\n" + 
-					" where ct.maHD = ?1";
+//			String sql = "select sp.maSP,sp.tenSP,sp.loaiHang,sp.nhaCungCap,ct.soLuong,sp.donGia,ct.thanhTien,ct.maHD\r\n" + 
+//					"from ChiTietHoaDon ct join SanPham sp on ct.maSP = sp.maSP\r\n" + 
+//					" where ct.maHD = ?1";	
+			String sql = "select * from ChiTietHoaDon where maHD=?1";
 			em.clear();
 			list = em.createNativeQuery(sql, ChiTietHoaDon.class).setParameter(1, maHoaDon).getResultList();
 			tr.commit();
-			return list;
 		} catch (Exception e) {
 			e.printStackTrace();
 			tr.rollback();
 		}
-		return null;
+		return list;
 	}
 }

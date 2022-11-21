@@ -14,6 +14,6 @@ public interface BanHangDao extends Remote {
 	public boolean createGioHang(HoaDon hd) throws RemoteException;
 	public boolean updateTrangThai(String id, boolean gioHang) throws RemoteException;
 	public List<KhachHang> getKhachHangTheoGioHang(boolean gioHang) throws RemoteException;
-	public boolean update(String maHD, String maNV, Date ngayLapHoaDon, double tongTien) throws RemoteException;
+	public boolean update(HoaDon hd) throws RemoteException;
 	public boolean delete (HoaDon hd) throws RemoteException;
 }

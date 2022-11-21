@@ -4,13 +4,14 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 
 
 @Entity
@@ -44,7 +45,7 @@ public class NhanVien implements Serializable{
 	@PrimaryKeyJoinColumn
 	private TaiKhoan taiKhoan;
 	
-	@OneToMany(mappedBy = "maNV")
+	@OneToMany(mappedBy = "maNV",fetch = FetchType.EAGER)
 	private List<HoaDon> dshd;
 	public String getMaNV() {
 		return maNV;
@@ -149,12 +150,6 @@ public class NhanVien implements Serializable{
 				+ ", email=" + email.trim() + ", trangThai=" + trangThai + ", taiKhoan + [userName= " + taiKhoan.getTenDN().trim() + "password= " + taiKhoan.getMatKhau().trim() + "]";
 	}
 
-	
-
-
-	
-	
-
 	public NhanVien(String maNV, String tenNV, Boolean gioiTinh, String sDT, String chucVu, double luong, String cMND,
 			Date ngaySinh, String diaChi, String email, Boolean trangThai, TaiKhoan taiKhoan) {
 		super();
@@ -177,6 +172,7 @@ public class NhanVien implements Serializable{
 		// TODO Auto-generated constructor stub
 	}
 
-	
-
+	public NhanVien(String maNV) {
+		this.maNV = maNV;
+	}
 }

@@ -10,14 +10,15 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.Query;
 
 import org.hibernate.annotations.QueryHints;
 
 import dao.NhanVienDao;
 import dao.SanPhamDao;
+import entity.KhachHang;
 import entity.NhanVien;
 import entity.SanPham;
 import entity.TaiKhoan;
@@ -223,6 +224,13 @@ public class SanPhamImpl extends UnicastRemoteObject implements SanPhamDao{
 			tr.rollback();
 		}
 		return null;
+	}
+
+	@Override
+	public SanPham getSanPhamByMa(String ma) throws RemoteException {
+		em.clear();
+		return em.createQuery("select sp from SanPham sp where sp.maSP = :x", SanPham.class).setParameter("x", ma)
+				.getSingleResult();
 	}
 
 }

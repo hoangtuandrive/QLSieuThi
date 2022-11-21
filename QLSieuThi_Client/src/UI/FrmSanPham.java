@@ -41,9 +41,8 @@ import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
 import com.formdev.flatlaf.FlatLightLaf;
 
-import dao.NhanVienDao;
 import dao.SanPhamDao;
-import dao.TaiKhoanDao;
+
 
 import entity.SanPham;
 
@@ -236,7 +235,8 @@ public class FrmSanPham extends javax.swing.JFrame implements ActionListener, Mo
 						.addGroup(pnChucNangLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
 								.addComponent(btnThem).addComponent(btnSua).addComponent(btnXoa))
 						.addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
-
+		pnThongTin.setBackground(new Color(219, 243, 255));
+		pnChucNang.setBackground(new Color(219, 243, 255));
 		btnThem.setBackground(new Color(0, 148, 224));
 		btnThem.setForeground(Color.WHITE);
 		btnThem.setFocusPainted(false);
@@ -295,7 +295,7 @@ public class FrmSanPham extends javax.swing.JFrame implements ActionListener, Mo
 				.addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup().addGroup(layout
 						.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
 						.addGroup(layout.createSequentialGroup().addContainerGap()
-								.addComponent(pntblHangHoa, javax.swing.GroupLayout.PREFERRED_SIZE, 720,
+								.addComponent(pntblHangHoa, javax.swing.GroupLayout.PREFERRED_SIZE, 670,
 										javax.swing.GroupLayout.PREFERRED_SIZE)
 								.addGap(18, 18, 18)
 								.addComponent(pnlTimKiem, javax.swing.GroupLayout.PREFERRED_SIZE,
@@ -412,12 +412,7 @@ public class FrmSanPham extends javax.swing.JFrame implements ActionListener, Mo
 		/* Create and display the form */
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				try {
-					new GUI().setVisible(true);
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				new FrmDangNhap().setVisible(true);
 			}
 		});
 	}
@@ -526,7 +521,8 @@ public class FrmSanPham extends javax.swing.JFrame implements ActionListener, Mo
 	public void docDuLieuDatabaseVaoTable() throws RemoteException {
 		List<SanPham> listsp = new ArrayList<SanPham>();
 		listsp = sp_dao.getTatCaSanPham();
-		DecimalFormat df = new DecimalFormat("#,##0.0");
+//		DecimalFormat df = new DecimalFormat("#,##0.0");
+		DecimalFormat df = new DecimalFormat("#,##0");
 		for (SanPham sp : listsp) {
 			modelSanPham.addRow(new Object[] { sp.getMaSP().trim(), sp.getTenSP().trim(), sp.getLoaiHang().trim(),
 					sp.getNhaCungCap().trim(), df.format(sp.getDonGia()), sp.getSoLuong() });

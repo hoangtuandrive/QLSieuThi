@@ -22,4 +22,5 @@ public interface SanPhamDao extends Remote {
 	public SortedSet<String> getTatCaLoaiHangSanPham() throws RemoteException;
 	public SortedSet<Double> getTatCaDonGiaSanPham() throws RemoteException;
 	public SortedSet<Integer> getTatCaSoLuongTonSanPham() throws RemoteException;
+	public SanPham getSanPhamByMa(String ma) throws RemoteException;
 }

@@ -8,11 +8,12 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import dao.NhanVienDao;
 import entity.KhachHang;
 import entity.NhanVien;
+import entity.SanPham;
 import entity.TaiKhoan;
 import util.MyEmFactory;
 
@@ -100,7 +101,7 @@ public class NhanVienImpl extends UnicastRemoteObject implements NhanVienDao {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public List<NhanVien> getTatCaNhanVienKhiAdd() throws RemoteException {
 		EntityTransaction tr = em.getTransaction();
@@ -304,8 +305,8 @@ public class NhanVienImpl extends UnicastRemoteObject implements NhanVienDao {
 
 	@Override
 	public SortedSet<String> getTatCaDiaChiNhanVien() throws RemoteException {
-		EntityTransaction tr=em.getTransaction();
-		List<NhanVien> list=new ArrayList<NhanVien>();
+		EntityTransaction tr = em.getTransaction();
+		List<NhanVien> list = new ArrayList<NhanVien>();
 		try {
 			tr.begin();
 			String sql = "select * from NhanVien";
@@ -325,8 +326,8 @@ public class NhanVienImpl extends UnicastRemoteObject implements NhanVienDao {
 
 	@Override
 	public SortedSet<String> getTatCaEmailNhanVien() throws RemoteException {
-		EntityTransaction tr=em.getTransaction();
-		List<NhanVien> list=new ArrayList<NhanVien>();
+		EntityTransaction tr = em.getTransaction();
+		List<NhanVien> list = new ArrayList<NhanVien>();
 		try {
 			tr.begin();
 			String sql = "select * from NhanVien";
@@ -346,8 +347,8 @@ public class NhanVienImpl extends UnicastRemoteObject implements NhanVienDao {
 
 	@Override
 	public SortedSet<Boolean> getTatCaTrangThaiNhanVien() throws RemoteException {
-		EntityTransaction tr=em.getTransaction();
-		List<NhanVien> list=new ArrayList<NhanVien>();
+		EntityTransaction tr = em.getTransaction();
+		List<NhanVien> list = new ArrayList<NhanVien>();
 		try {
 			tr.begin();
 			String sql = "select * from NhanVien";

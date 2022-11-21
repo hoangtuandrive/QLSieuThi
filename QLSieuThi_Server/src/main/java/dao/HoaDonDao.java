@@ -21,6 +21,6 @@ public interface HoaDonDao extends Remote {
 	public SortedSet<String> getTatCaTenKhachHang() throws RemoteException;
 	public SortedSet<String> getTatCaMaHoaDon() throws RemoteException;
 	public SortedSet<String> getTatCaTenNhanVien() throws RemoteException;
-	public List<Date> getTatCaNgayLapHoaDon() throws RemoteException;
-	public List<Double> getTatCaLuongNhanVien() throws RemoteException;
+	public SortedSet<Date> getTatCaNgayLapHoaDon() throws RemoteException;
+	public SortedSet<Double> getTongTienThanhToan() throws RemoteException;
 }

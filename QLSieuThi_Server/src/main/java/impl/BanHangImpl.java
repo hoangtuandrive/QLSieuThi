@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.Query;
 
 import dao.BanHangDao;
 import entity.HoaDon;
@@ -110,15 +110,17 @@ public class BanHangImpl extends UnicastRemoteObject implements BanHangDao {
 		return null;
 	}
 
+	// public boolean update(String maHD, String maNV, Date ngayLapHoaDon, double tongTien) throws RemoteException {
 	@Override
-	public boolean update(String maHD, String maNV, Date ngayLapHoaDon, double tongTien) throws RemoteException {
+	public boolean update(HoaDon hd) throws RemoteException {
 		EntityTransaction tr = em.getTransaction();
 		try {
 			tr.begin();
-			String sql = "update HoaDon\r\n" + "set maNV=?2,ngayLapHoaDon=?3,tongTienThanhToan=?4\r\n"
-					+ "where maHD=?1";
-			em.createNativeQuery(sql, HoaDon.class).setParameter(1, maHD).setParameter(2, maNV)
-					.setParameter(3, ngayLapHoaDon).setParameter(4, tongTien).executeUpdate();
+//			String sql = "update HoaDon\r\n" + "set maNV=?2,ngayLapHoaDon=?3,tongTienThanhToan=?4\r\n"
+//					+ "where maHD=?1";
+//			em.createNativeQuery(sql, HoaDon.class).setParameter(1, maHD).setParameter(2, maNV)
+//					.setParameter(3, ngayLapHoaDon).setParameter(4, tongTien).executeUpdate();
+			em.merge(hd);
 			tr.commit();
 			return true;
 		} catch (Exception e) {

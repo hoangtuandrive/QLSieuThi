@@ -9,6 +9,9 @@ import java.awt.Insets;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -19,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.SortedSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -45,6 +49,10 @@ import com.formdev.flatlaf.FlatLightLaf;
 //import com.sun.org.apache.xerces.internal.impl.xpath.regex.ParseException;
 import com.toedter.calendar.JDateChooser;
 
+import entity.ChiTietHoaDon;
+import entity.HoaDon;
+import entity.KhachHang;
+import entity.NhanVien;
 import entity.SanPham;
 import dao.BanHangDao;
 import dao.ChiTietHoaDonDao;
@@ -107,8 +115,11 @@ public class FrmBanHang extends JFrame implements ActionListener {
 	private static SanPhamDao sanpham_dao;
 	private static KhachHangDao khachhang_dao;
 	private static HoaDonDao hoadon_dao;
+	private NhanVienDao nhanvien_dao;
+	private ChiTietHoaDonDao cthd_dao;
+	private BanHangDao banhang_dao;
 
-	public JPanel createPanelBanHang() {
+	public JPanel createPanelBanHang() throws RemoteException {
 		FlatLightLaf.setup();
 		// TODO Auto-generated constructor stub
 		setTitle("FrmBanHang");
@@ -173,6 +184,7 @@ public class FrmBanHang extends JFrame implements ActionListener {
 		tableSanPham.setGridColor(getBackground());
 		tableSanPham.setRowHeight(tableSanPham.getRowHeight() + 20);
 		tableSanPham.setSelectionBackground(new Color(255, 255, 128));
+		tableSanPham.setSelectionForeground(Color.BLACK);
 		JTableHeader tableHeader = tableSanPham.getTableHeader();
 		tableHeader.setBackground(new Color(0, 148, 224));
 		tableHeader.setFont(new Font("Tahoma", Font.BOLD, 12));
@@ -251,7 +263,7 @@ public class FrmBanHang extends JFrame implements ActionListener {
 		b4.add(b17);
 		b4.add(b16);
 		b4.add(b11);
-
+		
 		String[] colHeader1 = { "Mã Sản Phẩm", "Tên Sản Phẩm", "Loại Hàng", "Nhà Cung Cấp", "Đơn Giá", "Số Lượng",
 				"Thành Tiền" };
 		modelGioHang = new DefaultTableModel(colHeader1, 0);
@@ -394,12 +406,28 @@ public class FrmBanHang extends JFrame implements ActionListener {
 		tableSanPham.setDefaultEditor(Object.class, null);
 		tableSanPham.getTableHeader().setReorderingAllowed(false);
 
-//		btnTaoGioHang.setEnabled(false);
-//		txtTongTien.setEditable(false);
-
 		txtTongTien.setBorder(null);
 		txtTongTien.setBackground(null);
 		txtTongTien.setText(null);
+		
+		try {
+			nhanvien_dao = (NhanVienDao) Naming.lookup(FrmDangNhap.IP + "nhanVienDao");
+			sanpham_dao = (SanPhamDao) Naming.lookup(FrmDangNhap.IP + "sanPhamDao");
+			cthd_dao = (ChiTietHoaDonDao) Naming.lookup(FrmDangNhap.IP + "chiTietHoaDonDao");
+			hoadon_dao = (HoaDonDao) Naming.lookup(FrmDangNhap.IP + "hoaDonDao");
+			khachhang_dao = (KhachHangDao) Naming.lookup(FrmDangNhap.IP + "khachHangDao");
+			banhang_dao = (BanHangDao) Naming.lookup(FrmDangNhap.IP + "banHangDao");
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 
 		btnTimKHCu.addActionListener(this);
 		btnTaoGioHang.addActionListener(this);
@@ -413,17 +441,511 @@ public class FrmBanHang extends JFrame implements ActionListener {
 		btnTaoGioHang.setEnabled(false);
 		txtTongTien.setEditable(false);
 
+		docDuLieuDatabaseVaoTableSanPham();
+		docDuLieuVaoCmbSDT();
+		docDuLieuVaoCmbGioHang();
+		docMaSanPhamVaoCmbTim();
+
 		return p;
 	}
-
+	
 	public static void main(String[] args) throws RemoteException {
 		// TODO Auto-generated method stub
-		new GUI().setVisible(true);
+		new FrmDangNhap().setVisible(true);
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent arg0) {
-		// TODO Auto-generated method stub
+	public void actionPerformed(ActionEvent e) {
+		Object o = e.getSource();
+		try {
+			if (o.equals(btnTimKHCu)) {
+				String sdtCheck = cmbDanhSachSdt.getSelectedItem().toString();
+				if (sdtCheck.trim().length() > 0) {
+					if (!(sdtCheck.matches(
+							"^(0|\\+84)(\\s|\\.)?((3[2-9])|(5[689])|(7[06-9])|(8[1-689])|(9[0-46-9]))(\\d)(\\s|\\.)?(\\d{3})(\\s|\\.)?(\\d{3})$"))) {
+						JOptionPane.showMessageDialog(this, "Số điện thoại không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+				} else {
+					JOptionPane.showMessageDialog(this, "Số điện thoại không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				
+				txtMaKhachHang.setText(maHDMoiDat);
+				if (cmbDanhSachSdt.getItemCount() > 0 && cmbDanhSachSdt.getSelectedIndex() != -1) {
+					String sdt = cmbDanhSachSdt.getSelectedItem().toString().trim();
+					SortedSet<String> list = khachhang_dao.getTatCaSDTKhachHang();
+			
+//					List<KhachHang> listKHTrungSDT = new ArrayList<KhachHang>();
+//
+//					for (KhachHang khachHang : list) {
+//						if (khachHang.getSDT().trim().equals(sdt.trim())) {
+//							listKHTrungSDT.add(khachHang);
+//						}
+//					}
+
+					if (list.contains(sdt)) {
+						KhachHang kh = khachhang_dao.getKhachHangBySdt(sdt);
+						JOptionPane.showMessageDialog(this, "Đây là khách hàng cũ. Welcome back!!!");
+						txtTenKhachHang.setText(kh.getTenKH().trim());
+						txtCMND.setText(kh.getCMND().trim());
+						cmbGioiTinh.setSelectedItem(kh.isGioiTinh() == true ? "Nam" : "Nữ");
+						txtNgaySinh.setDate(kh.getNgaySinh());
+						txtEmail.setText(kh.getEmail().trim());
+						txtDiaChi.setText(kh.getDiaChi().trim());
+						txtMaKhachHang.setText(kh.getMaKH().trim());
+						btnTaoGioHang.setEnabled(true);
+					}
+				} else {
+					JOptionPane.showMessageDialog(this, "Đây là khách hàng mới. Welcome to our store!!!");
+					String maKH;
+					List<KhachHang> listKH = khachhang_dao.getTatCaKhachHang();
+					if (listKH.size() == 0)
+						maKH = "KH1001";
+					else {
+						String maKHCuoi = listKH.get(listKH.size() - 1).getMaKH().trim();
+						int layMaSo = Integer.parseInt(maKHCuoi.substring(2, maKHCuoi.length()));
+						maKH = "KH" + (layMaSo + 1);
+					}
+					txtMaKhachHang.setText(maKH);
+					btnTaoGioHang.setEnabled(true);
+				}
+			}
+
+			if (o.equals(btnTaoGioHang)) {
+				// Gán rỗng cho các biến tạm
+				if (!maHDMoiDat.equals("")) {
+					maHDMoiDat = "";
+					maKHDatGioHang = "";
+				}
+				// Kiểm tra thông tin khách hàng
+				if (validInputKhachHang()) {
+					// Lấy thông tin khách hàng
+					String tenKH = txtTenKhachHang.getText().trim();
+					String cmnd = txtCMND.getText().trim();
+					String sdt = cmbDanhSachSdt.getSelectedItem().toString();
+					Date ngaySinh = txtNgaySinh.getDate();
+					String maKH = txtMaKhachHang.getText().trim();
+					String email = txtEmail.getText().trim();
+					String diaChi = txtDiaChi.getText().trim();
+					String gioiTinh = cmbGioiTinh.getSelectedItem().toString();
+					java.sql.Date date = new java.sql.Date(ngaySinh.getYear(), ngaySinh.getMonth(), ngaySinh.getDate());
+
+					// Kiểm tra có phải khách hàng cũ
+					SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyy");
+					List<KhachHang> listKH = khachhang_dao.getTatCaKhachHang();
+					int flag = 0;
+					for (KhachHang khachHang : listKH) {
+						if (khachHang.getTenKH().trim().equals(tenKH) && khachHang.getCMND().trim().equals(cmnd)
+								&& khachHang.getSDT().trim().equals(sdt)
+								&& df.format(khachHang.getNgaySinh()).equals(df.format(ngaySinh))
+								&& khachHang.isGioiTinh() == (cmbGioiTinh.getSelectedItem() == "Nam" ? true : false)) {
+							flag = 1;
+							maKHDatGioHang = khachHang.getMaKH().trim();
+							break;
+						}
+					}
+
+					// Thêm nếu là khách hàng mới
+					if (flag == 0) {
+						maKHDatGioHang = maKH;
+						KhachHang kh = new KhachHang(maKH, tenKH, gioiTinh == "Nam" ? true : false, sdt, cmnd, date,
+								diaChi, email, true);
+//						khachhang_dao.createGioHang(kh);
+						khachhang_dao.create(kh);
+						JOptionPane.showMessageDialog(this,
+								"Thêm khách hàng mới vào trong hệ thống thành công. Welcome!");
+
+						docDuLieuVaoCmbSDT();
+						cmbDanhSachSdt.setSelectedIndex(cmbDanhSachSdt.getItemCount() - 1);
+					}
+					// Tạo lại giỏ hàng
+					else {
+						KhachHang kh = new KhachHang(maKH, tenKH, gioiTinh == "Nam" ? true : false, sdt, cmnd, date,
+								diaChi, email, true);
+						khachhang_dao.updateGioHang(kh);
+					}
+					// Thêm hóa đơn mới
+					String maHD;
+					List<HoaDon> listHD = hoadon_dao.getTatCaHoaDon();
+
+					if (listHD.size() == 0)
+						maHD = "HD1001";
+					else {
+						String maHDCuoi = listHD.get(listHD.size() - 1).getMaHD().trim();
+						int layMaSo = Integer.parseInt(maHDCuoi.substring(2, maHDCuoi.length()));
+						maHD = "HD" + (layMaSo + 1);
+					}
+
+					HoaDon hd = new HoaDon(maHD, new KhachHang(maKHDatGioHang));
+
+					if (banhang_dao.createGioHang(hd)) {
+						maHDMoiDat = hd.getMaHD();
+						JOptionPane.showMessageDialog(this, "Tạo giỏ hàng thành công. Time to order!");
+					}
+					// Cập nhật lại cơ sở dữ liệu và các giao diện liên quan
+
+					docDuLieuVaoCmbGioHang();
+					cmbGioHang.setSelectedIndex(cmbGioHang.getItemCount() - 1);
+
+					FrmKhachHang.xoaHetDL();
+					FrmKhachHang.docDuLieuDatabaseVaoTable();
+					btnTaoGioHang.setEnabled(false);
+				}
+			}
+			if (o.equals(cmbGioHang)) {
+
+//				docDuLieuVaoCmbGioHang();
+//				cmbGioHang.setSelectedIndex(cmbGioHang.getItemCount() - 1);
+				// ko chắc
+				cmbGioHangXuongTable();
+			}
+			if (o.equals(btnCong)) {
+				if (!validInputSoLuong())
+					return;
+				else {
+					int row = tableSanPham.getSelectedRow();
+					// Kiểm tra chọn giỏ hàng và sản phẩm cần đặt chưa
+					Object giaTriCmb = cmbGioHang.getSelectedItem();
+					if (giaTriCmb == null || giaTriCmb.toString().trim().equals("")) {
+						JOptionPane.showMessageDialog(this, "Vui lòng chọn giỏ hàng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					if (row != -1 && giaTriCmb != null && !giaTriCmb.toString().trim().equals("")) {
+						int soLuongCong = Integer.parseInt(txtSoLuong.getText());
+						int soLuongHienTai = Integer.parseInt(modelSanPham.getValueAt(row, 5).toString().trim());
+						if (soLuongHienTai < soLuongCong) {
+							JOptionPane.showMessageDialog(this, "Không đủ số lượng để đặt", "Lỗi",
+									JOptionPane.ERROR_MESSAGE);
+							return;
+						} else {
+							// Lấy hóa đơn từ sdt
+							String temp = giaTriCmb.toString().trim();
+							String sdtTrongCbo = temp.replaceAll("[^0-9]", "").trim();
+							HoaDon hoadon = new HoaDon();
+
+							List<HoaDon> listHD = hoadon_dao.getTatCaHoaDonChuaTinhTien();
+							for (HoaDon hd : listHD) {
+								KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH());
+								if(kh.getSDT().equals(sdtTrongCbo.trim())) {
+									hoadon = hd;
+									break;
+								}
+							}
+							// Lấy sản phẩm từ mã sản phẩm
+							String maSP = modelSanPham.getValueAt(row, 0).toString().trim();
+							SanPham sanpham = new SanPham();
+
+							List<SanPham> listSP = sanpham_dao.getTatCaSanPham();
+							for (SanPham sp : listSP) {
+								if (sp.getMaSP().trim().equals(maSP)) {
+									sanpham = sp;
+									break;
+								}
+							}
+							String giaStr = tableSanPham.getValueAt(row, 4).toString().trim();
+							String[] gia = giaStr.split(",");
+							String giaTien = "";
+							for (int i = 0; i < gia.length; i++) {
+								giaTien += gia[i];
+							}
+							ChiTietHoaDon cthd = new ChiTietHoaDon(hoadon, sanpham, soLuongCong,
+									Double.parseDouble(giaTien));
+							DecimalFormat df = new DecimalFormat("#,##0");
+							int flag = 0;
+							int soLuongCu = 0;
+							int hangCanSua = 0;
+							int rowTableGH = tableGioHang.getRowCount();
+							// ktra sản phẩm này có trong giỏ hàng chưa
+							for (int i = 0; i < rowTableGH; i++) {
+								if (maSP.trim().equals(modelGioHang.getValueAt(i, 0).toString().trim())) {
+									flag = 1; // có
+									soLuongCu = Integer.parseInt(modelGioHang.getValueAt(i, 5).toString());
+									hangCanSua = i;
+									break;
+								}
+							}
+							if (flag == 1) {
+								ChiTietHoaDon cthdDaco = new ChiTietHoaDon(hoadon, sanpham, soLuongCong + soLuongCu,
+										Double.parseDouble(giaTien));
+								cthd_dao.updateSoLuong(cthdDaco);
+								modelGioHang.setValueAt(soLuongCong + soLuongCu, hangCanSua, 5);
+								modelGioHang.setValueAt(df.format(cthdDaco.getThanhTien()), hangCanSua, 6);
+							} else {
+								cthd_dao.update(cthd);
+								modelGioHang.addRow(new Object[] { cthd.getMaSP().getMaSP().trim(),
+										cthd.getMaSP().getTenSP().trim(), cthd.getMaSP().getLoaiHang().trim(),
+										cthd.getMaSP().getNhaCungCap().trim(), df.format(cthd.getMaSP().getDonGia()),
+										cthd.getSoLuong(), df.format(cthd.getThanhTien()) });
+							}
+							// Set lại bảng danh sách sản phẩm
+							sanpham.setSoLuong(soLuongHienTai - soLuongCong);
+							sanpham_dao.update(sanpham);
+							tableSanPham.setValueAt(soLuongHienTai - soLuongCong, row, 5);
+							cmbGioHangXuongTable();
+						}
+					} else
+						JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm", "Lỗi",
+								JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			if (o.equals(btnTru)) {
+				if (!validInputSoLuong())
+					return;
+				else {
+					int row = tableGioHang.getSelectedRow();
+					// Kiểm tra chọn giỏ hàng và sản phẩm cần đặt chưa
+					Object giaTriCmb = cmbGioHang.getSelectedItem();
+					if (giaTriCmb == null || giaTriCmb.toString().trim().equals("")) {
+						JOptionPane.showMessageDialog(this, "Vui lòng chọn giỏ hàng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					if (row != -1 && giaTriCmb != null && !giaTriCmb.toString().trim().equals("")) {
+						int soLuongTru = Integer.parseInt(txtSoLuong.getText());
+
+						// Lấy hóa đơn từ sdt
+						String temp = giaTriCmb.toString().trim();
+						String sdtTrongCbo = temp.replaceAll("[^0-9]", "").trim();
+						HoaDon hoadon = new HoaDon();
+
+						List<HoaDon> listHD = hoadon_dao.getTatCaHoaDonChuaTinhTien();
+						for (HoaDon hd : listHD) {
+							KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH());
+							if(kh.getSDT().equals(sdtTrongCbo.trim())) {
+								hoadon = hd;
+								break;
+							}
+						}
+						// Lấy sản phẩm từ mã sản phẩm
+						String maSP = modelGioHang.getValueAt(row, 0).toString().trim();
+						SanPham sanpham = new SanPham();
+
+						List<SanPham> listSP = sanpham_dao.getTatCaSanPham();
+						for (SanPham sp : listSP) {
+							if (sp.getMaSP().trim().equals(maSP)) {
+								sanpham = sp;
+								break;
+							}
+						}
+						int soLuongHienTai = Integer.parseInt(tableGioHang.getValueAt(row, 5).toString());
+						if (soLuongTru > soLuongHienTai) {
+							JOptionPane.showMessageDialog(this,
+									"Lỗi: Số lượng hủy không được nhiều hơn số lượng đã đặt", "Lỗi",
+									JOptionPane.ERROR_MESSAGE);
+							return;
+						}
+						String giaStr = tableGioHang.getValueAt(row, 4).toString().trim();
+						String[] gia = giaStr.split(",");
+						String giaTien = "";
+						for (int i = 0; i < gia.length; i++) {
+							giaTien += gia[i];
+						}
+						ChiTietHoaDon cthd = new ChiTietHoaDon(hoadon, sanpham, soLuongHienTai - soLuongTru,
+								Double.parseDouble(giaTien));
+						 cthd_dao.updateSoLuong(cthd); 
+
+						DecimalFormat df = new DecimalFormat("#,##0");
+						modelGioHang.setValueAt(soLuongHienTai - soLuongTru, row, 5);
+						modelGioHang.setValueAt(df.format(cthd.getThanhTien()), row, 6);
+
+						// Set lại bảng danh sách sản phẩm
+						int soLuongSP_hientai = sanpham.getSoLuong();
+						sanpham.setSoLuong(soLuongSP_hientai + soLuongTru);
+						sanpham_dao.update(sanpham);
+						xoaHetDLSanPham();
+						docDuLieuDatabaseVaoTableSanPham();
+
+						// Ktra soluong = 0 thì xóa sản phẩm khỏi giỏ hàng
+						int soLuongMoi = Integer.parseInt(tableGioHang.getValueAt(row, 5).toString());
+						if (soLuongMoi < 1) {
+							cthd_dao.delete(sanpham.getMaSP(), hoadon.getMaHD());
+							modelGioHang.removeRow(row);
+							JOptionPane.showMessageDialog(this, "Xóa sản phẩm " + " khỏi giỏ hàng thành công!");
+						}
+						// Xóa giỏ hàng
+						if (modelGioHang.getRowCount() == 0) {
+							if (khachhang_dao.huyGioHang(sdtTrongCbo, false)) {
+								if (banhang_dao.delete(hoadon)) {
+									JOptionPane.showMessageDialog(this, "Xóa giỏ hàng thành công :((");
+									cmbGioHang.removeAllItems();
+									docDuLieuVaoCmbGioHang();
+								} else
+									JOptionPane.showMessageDialog(this, "Xóa giỏ hàng không thành công", "Lỗi",
+											JOptionPane.ERROR_MESSAGE);
+							} else
+								JOptionPane.showMessageDialog(this, "Xóa giỏ hàng không thành công", "Lỗi",
+										JOptionPane.ERROR_MESSAGE);
+
+						}
+					} else
+						JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm trong giỏ hàng", "Lỗi",
+								JOptionPane.ERROR_MESSAGE);
+					cmbGioHangXuongTable();
+				}
+			}
+			if (o.equals(btnThanhToan)) {
+				Object giaTriCmb = cmbGioHang.getSelectedItem();
+				if (giaTriCmb == null || giaTriCmb.toString().trim().equals("") || modelGioHang.getRowCount() == 0) {
+					JOptionPane.showMessageDialog(this, "Vui lòng chọn giỏ hàng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				if (giaTriCmb != null && !giaTriCmb.toString().trim().equals("") || modelGioHang.getRowCount() != 0) {
+					// Lấy hóa đơn từ sdt
+					String temp = giaTriCmb.toString().trim();
+					String sdtTrongCbo = temp.replaceAll("[^0-9]", "").trim();
+					HoaDon hd = new HoaDon();
+
+					List<HoaDon> listHD = hoadon_dao.getTatCaHoaDonChuaTinhTien();
+					for (HoaDon hd1 : listHD) {
+						KhachHang kh = khachhang_dao.getKhachHangByMa(hd1.getMaKH().getMaKH().trim());
+						if(kh.getSDT().trim().equals(sdtTrongCbo.trim())) {
+							hd = hd1;
+							hd.setMaKH(hd1.getMaKH());
+							break;
+						}
+					}
+
+//					HoaDon hoadon = hoadon_dao.getHoaDonChuaTinhTienDeThanhToan(hoadon_sdt.getMaKH().getMaKH());
+//					System.out.println(hoadon_sdt);
+					// Get các null
+//					NhanVien nv = hoadon_dao.getNhanVienSuDung(FrmDangNhap.getTaiKhoan());
+//					String maNV = nv.getMaNV();
+//					String maHD = hoadon.getMaHD();
+					
+					NhanVien nv = nhanvien_dao.getNhanVienById(FrmDangNhap.getTaiKhoan());
+
+					Calendar calendar = Calendar.getInstance();
+					Date date = calendar.getTime();
+					hd.setNgayLapHoaDon(date);
+					hd.setMaHD(hd.getMaHD());
+
+					double tongTien = 0;
+					List<ChiTietHoaDon> list = cthd_dao.getCTHDTheoMaHDLenTable(hd.getMaHD());
+					for (ChiTietHoaDon cthd : list) {
+						tongTien+=cthd.getThanhTien();
+					}
+					hd.setTongTien(tongTien);
+					hd.setMaNV(nv);
+//					if (banhang_dao.update(maHD, maNV, date, tongTien) == true) {
+					if (banhang_dao.update(hd) == true) {
+						JOptionPane.showMessageDialog(this, "Thanh toán thành công. Very good!");
+						khachhang_dao.huyGioHang(sdtTrongCbo, false);
+
+						cmbGioHang.removeAllItems();
+						docDuLieuVaoCmbGioHang();
+						xoaThongTinTrenTextField();
+						FrmHoaDon.docDuLieuDatabaseVaoTable();
+						KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH());
+						new FrmChiTietHoaDon(kh.getTenKH(), nv.getTenNV(), hd.getMaHD(), date)
+								.setVisible(true);
+
+					} else {
+						JOptionPane.showMessageDialog(this, "Thanh toán không thành công");
+					}
+				}
+
+				else {
+					JOptionPane.showMessageDialog(this, "Thanh toán không thành công");
+				}
+
+			}
+			if (o.equals(cmbChon)) {
+				if (cmbChon.getSelectedIndex() == 0) {
+					docMaSanPhamVaoCmbTim();
+				} else if (cmbChon.getSelectedIndex() == 1) {
+					docTenSanPhamVaoCmbTim();
+				} else if (cmbChon.getSelectedIndex() == 2) {
+					docLoaiHangSanPhamVaoCmbTim();
+				} else if (cmbChon.getSelectedIndex() == 3) {
+					docNhaCungCapSanPhamVaoCmbTim();
+				} else if (cmbChon.getSelectedIndex() == 4) {
+					docDonGiaSanPhamVaoCmbTim();
+				} else if (cmbChon.getSelectedIndex() == 5) {
+					docSoLuongTonSanPhamVaoCmbTim();
+				}
+			}
+			if (o.equals(btnTim)) {
+				DefaultTableModel model = (DefaultTableModel) tableSanPham.getModel();
+				model.setRowCount(0);
+				DecimalFormat df = new DecimalFormat("#,##0");
+				if (cmbTim.getSelectedIndex() == 0) {
+					docDuLieuDatabaseVaoTableSanPham();
+				} else if (cmbChon.getSelectedIndex() == 0) {
+					String tim = cmbTim.getSelectedItem().toString().trim();
+					List<SanPham> list = sanpham_dao.getTatCaSanPham();
+					for (SanPham lk : list) {
+						if (lk.getMaSP().trim().equals(tim.trim())) {
+							modelSanPham
+									.addRow(new Object[] { lk.getMaSP().trim(), lk.getTenSP().trim(), lk.getLoaiHang().trim(),
+											lk.getNhaCungCap().trim(), df.format(lk.getDonGia()), lk.getSoLuong() });
+						}
+					}
+				}
+				if (cmbChon.getSelectedIndex() == 1) {
+					String tim = cmbTim.getSelectedItem().toString().trim();
+					List<SanPham> list = sanpham_dao.getTatCaSanPham();
+					for (SanPham lk : list) {
+						if (lk.getTenSP().trim().equals(tim.trim())) {
+							modelSanPham
+									.addRow(new Object[] { lk.getMaSP().trim(), lk.getTenSP().trim(), lk.getLoaiHang().trim(),
+											lk.getNhaCungCap().trim(), df.format(lk.getDonGia()), lk.getSoLuong() });
+						}
+					}
+				}
+				if (cmbChon.getSelectedIndex() == 2) {
+					String tim = cmbTim.getSelectedItem().toString().trim();
+					List<SanPham> list = sanpham_dao.getTatCaSanPham();
+					for (SanPham lk : list) {
+						if (lk.getLoaiHang().trim().equals(tim.trim())) {
+							modelSanPham
+									.addRow(new Object[] { lk.getMaSP().trim(), lk.getTenSP().trim(), lk.getLoaiHang().trim(),
+											lk.getNhaCungCap().trim(), df.format(lk.getDonGia()), lk.getSoLuong() });
+						}
+					}
+				}
+				if (cmbChon.getSelectedIndex() == 3) {
+					String tim = cmbTim.getSelectedItem().toString().trim();
+					List<SanPham> list = sanpham_dao.getTatCaSanPham();
+					for (SanPham lk : list) {
+						if (lk.getNhaCungCap().trim().equals(tim.trim())) {
+							modelSanPham
+									.addRow(new Object[] { lk.getMaSP().trim(), lk.getTenSP().trim(), lk.getLoaiHang().trim(),
+											lk.getNhaCungCap().trim(), df.format(lk.getDonGia()), lk.getSoLuong() });
+						}
+					}
+				}
+				if (cmbChon.getSelectedIndex() == 4) {
+					String tim = cmbTim.getSelectedItem().toString().trim();
+					double d = Double.parseDouble(tim.replaceAll(",", "").trim());
+					List<SanPham> list = sanpham_dao.getTatCaSanPham();
+					for (SanPham lk : list) {
+						if (lk.getDonGia() == d) {
+							modelSanPham
+									.addRow(new Object[] { lk.getMaSP().trim(), lk.getTenSP().trim(), lk.getLoaiHang().trim(),
+											lk.getNhaCungCap().trim(), df.format(lk.getDonGia()), lk.getSoLuong() });
+						}
+					}
+				}
+				if (cmbChon.getSelectedIndex() == 5) {
+					String tim = cmbTim.getSelectedItem().toString().trim();
+					int d = Integer.parseInt(tim.trim());
+					List<SanPham> list = sanpham_dao.getTatCaSanPham();
+					for (SanPham lk : list) {
+						if (lk.getSoLuong() == d) {
+							modelSanPham
+									.addRow(new Object[] { lk.getMaSP().trim(), lk.getTenSP().trim(), lk.getLoaiHang().trim(),
+											lk.getNhaCungCap().trim(), df.format(lk.getDonGia()), lk.getSoLuong() });
+						}
+					}
+				}
+			}
+			if (o.equals(btnHuy)) {
+				xoaThongTinTrenTextField();
+			}
+		} catch (Exception e2) {
+			e2.printStackTrace();
+		}
 
 	}
 
@@ -442,65 +964,74 @@ public class FrmBanHang extends JFrame implements ActionListener {
 		dm.setRowCount(0);
 	}
 
-	public static void docDuLieuVaoCmbSDT() {
+	public static void docDuLieuVaoCmbSDT() throws RemoteException {
 		cmbDanhSachSdt.removeAllItems();
-		List<String> listSDT = khachhang_dao.getTatCaSDTKhachHang();
+		SortedSet<String> listSDT = khachhang_dao.getTatCaSDTKhachHang();
 		cmbDanhSachSdt.addItem("");
 		for (String s : listSDT) {
 			cmbDanhSachSdt.addItem(s.trim());
 		}
 	}
 
-	public static void docMaSanPhamVaoCmbTim() {
+	private void docDuLieuVaoCmbGioHang() throws RemoteException {
+		cmbGioHang.removeAllItems();
+		List<KhachHang> list = banhang_dao.getKhachHangTheoGioHang(true);
+		cmbGioHang.addItem("");
+		for (KhachHang kh : list) {
+			cmbGioHang.addItem(kh.getTenKH().trim() + ", " + kh.getSDT().trim());
+		}
+	}
+
+	public static void docMaSanPhamVaoCmbTim() throws RemoteException {
 		cmbTim.removeAllItems();
-		List<String> list = sanpham_dao.getTatCaMaSanPham();
+		SortedSet<String> list = sanpham_dao.getTatCaMaSanPham();
 		cmbTim.addItem("");
 		for (String s : list) {
 			cmbTim.addItem(s.trim());
 		}
 	}
 
-	public static void docTenSanPhamVaoCmbTim() {
+	public static void docTenSanPhamVaoCmbTim() throws RemoteException {
 		cmbTim.removeAllItems();
-		List<String> list = SanPham_dao.getTatCaTenSanPham();
+		SortedSet<String> list = sanpham_dao.getTatCaTenSanPham();
 		cmbTim.addItem("");
 		for (String s : list) {
 			cmbTim.addItem(s.trim());
 		}
 	}
 
-	public static void docNhaCungCapSanPhamVaoCmbTim() {
+	public static void docNhaCungCapSanPhamVaoCmbTim() throws RemoteException {
 		cmbTim.removeAllItems();
-		List<String> list = SanPham_dao.getTatCaNhaCungCapSanPham();
+		SortedSet<String> list = sanpham_dao.getTatCaNhaCungCapSanPham();
 		cmbTim.addItem("");
 		for (String s : list) {
 			cmbTim.addItem(s.trim());
 		}
 	}
 
-	public static void docLoaiHangSanPhamVaoCmbTim() {
+	public static void docLoaiHangSanPhamVaoCmbTim() throws RemoteException {
 		cmbTim.removeAllItems();
-		List<String> list = SanPham_dao.getTatCaLoaiHangSanPham();
+		SortedSet<String> list = sanpham_dao.getTatCaLoaiHangSanPham();
 		cmbTim.addItem("");
 		for (String s : list) {
 			cmbTim.addItem(s.trim());
 		}
 	}
 
-	public static void docDonGiaSanPhamVaoCmbTim() {
+	public static void docDonGiaSanPhamVaoCmbTim() throws RemoteException {
 		DecimalFormat df = new DecimalFormat("#,##0");
 		cmbTim.removeAllItems();
-		List<Double> list = SanPham_dao.getTatCaDonGiaSanPham();
+		SortedSet<Double> list = sanpham_dao.getTatCaDonGiaSanPham();
 		cmbTim.addItem("");
 		for (Double s : list) {
 			cmbTim.addItem(df.format(s));
 		}
 	}
 
-	public static void docSoLuongTonSanPhamVaoCmbTim() {
+	public static void docSoLuongTonSanPhamVaoCmbTim() throws RemoteException {
 		DecimalFormat df = new DecimalFormat("#");
 		cmbTim.removeAllItems();
-		List<Integer> list = SanPham_dao.getTatCaSoLuongTonSanPham();
+		SortedSet<Integer> list = sanpham_dao.getTatCaSoLuongTonSanPham();
 		cmbTim.addItem("");
 		for (Integer s : list) {
 			cmbTim.addItem(df.format(s));
@@ -520,7 +1051,7 @@ public class FrmBanHang extends JFrame implements ActionListener {
 		cmbGioiTinh.setSelectedIndex(0);
 	}
 
-	public void cmbGioHangXuongTable() {
+	public void cmbGioHangXuongTable() throws RemoteException {
 		Object giaTriCbo = cmbGioHang.getSelectedItem();
 		if (giaTriCbo == null || giaTriCbo.toString().trim().equals("")) {
 
@@ -539,7 +1070,8 @@ public class FrmBanHang extends JFrame implements ActionListener {
 					String maHD = null;
 					List<HoaDon> listHD = hoadon_dao.getTatCaHoaDonChuaTinhTien();
 					for (HoaDon hd : listHD) {
-						if (hd.getMaKH().getSDT().equals(sdtTrongCbo)) {
+						KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH());
+						if(kh.getSDT().equals(sdtTrongCbo.trim())) {
 							maHD = hd.getMaHD();
 							break;
 						}
@@ -547,13 +1079,18 @@ public class FrmBanHang extends JFrame implements ActionListener {
 					// Hiện lên bảng và txt
 					Double tongTien = 0.0;
 					DecimalFormat df = new DecimalFormat("#,##0");
-					List<ChiTietHoaDon> listHDDV = cthd_dao.getCTHDTheoMaHDLenTable(maHD);
-					for (ChiTietHoaDon cthd : listHDDV) {
-						modelGioHang.addRow(new Object[] { cthd.getMaSanPham().getMaLK().trim(),
-								cthd.getMaSanPham().getTenLK().trim(), cthd.getMaSanPham().getLoaiHang().trim(),
-								cthd.getMaSanPham().getNhaCungCap().trim(),
-								df.format(cthd.getMaSanPham().getDonGia()), cthd.getSoLuong(),
-								df.format(cthd.getThanhTien()) });
+					List<ChiTietHoaDon> listHDSP = cthd_dao.getCTHDTheoMaHDLenTable(maHD);
+					for (ChiTietHoaDon cthd : listHDSP) {
+						SanPham sp = sanpham_dao.getSanPhamByMa(cthd.getMaSP().getMaSP());
+//						modelGioHang.addRow(new Object[] { cthd.getMaSP().getMaSP().trim(),
+//								cthd.getMaSP().getTenSP().trim(), cthd.getMaSP().getLoaiHang().trim(),
+//								cthd.getMaSP().getNhaCungCap().trim(), df.format(cthd.getMaSP().getDonGia()),
+//								cthd.getSoLuong(), df.format(cthd.getThanhTien()) });
+//						tongTien += cthd.getThanhTien();
+						modelGioHang.addRow(new Object[] { sp.getMaSP().trim(),
+								sp.getTenSP().trim(), sp.getLoaiHang().trim(),
+								sp.getNhaCungCap().trim(), df.format(sp.getDonGia()),
+								cthd.getSoLuong(), df.format(cthd.getThanhTien()) });
 						tongTien += cthd.getThanhTien();
 					}
 					if (tongTien == 0)
@@ -585,5 +1122,91 @@ public class FrmBanHang extends JFrame implements ActionListener {
 				}
 			}
 		}
+	}
+
+	private void xoaHetDLGioHang() {
+		DefaultTableModel dm = (DefaultTableModel) tableGioHang.getModel();
+		dm.setRowCount(0);
+	}
+
+	private boolean validInputSoLuong() {
+		String soLuong = txtSoLuong.getText();
+		if (soLuong.trim().length() > 0) {
+			try {
+				int x = Integer.parseInt(soLuong);
+				if (x <= 0) {
+					JOptionPane.showMessageDialog(this, "Số lượng phải lớn hơn 0", "Lỗi", JOptionPane.ERROR_MESSAGE);
+					return false;
+				}
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(this, "Error: Số lượng phải nhập số", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Vui lòng nhập số lượng!!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			txtSoLuong.requestFocus();
+			return false;
+		}
+		return true;
+	}
+
+	private boolean validInputKhachHang() {
+		// TODO Auto-generated method stub
+		String maKH = txtMaKhachHang.getText();
+		String tenKH = txtTenKhachHang.getText();
+		String sdt = cmbDanhSachSdt.getSelectedItem().toString();
+		String email = txtEmail.getText();
+		String diaChi = txtDiaChi.getText();
+		String cmnd = txtCMND.getText();
+
+		if (tenKH.trim().length() > 0) {
+			if (!(tenKH.matches("[^\\@\\!\\$\\^\\&\\*\\(\\)0-9]+"))) {
+				JOptionPane.showMessageDialog(this, "Tên khách hàng phải là ký tự chữ", "Lỗi",
+						JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Tên khách hàng không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (sdt.trim().length() > 0) {
+			if (!(sdt.matches(
+					"^(0|\\+84)(\\s|\\.)?((3[2-9])|(5[689])|(7[06-9])|(8[1-689])|(9[0-46-9]))(\\d)(\\s|\\.)?(\\d{3})(\\s|\\.)?(\\d{3})$"))) {
+				JOptionPane.showMessageDialog(this, "Số điện thoại không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Số điện thoại không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (cmnd.trim().length() > 0) {
+			if (!(cmnd.matches("\\d{9}"))) {
+				JOptionPane.showMessageDialog(this, "CMND không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "CMND không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (email.trim().length() > 0) {
+			if (!(email.matches("^[A-Za-z0-9]+[A-Za-z0-9]*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)$"))) {
+				JOptionPane.showMessageDialog(this, "Email không đúng", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Email không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		if (diaChi.trim().length() > 0) {
+			if (!(diaChi.matches("[^\\@\\!\\$\\^\\&\\*\\(\\)]+"))) {
+				JOptionPane.showMessageDialog(this, "Địa chỉ không chứa ký tự đặc biệt", "Lỗi",
+						JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+		} else {
+			JOptionPane.showMessageDialog(this, "Địa chỉ không được để trống", "Lỗi", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		return true;
 	}
 }

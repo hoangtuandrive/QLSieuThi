@@ -4,12 +4,12 @@ package entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 
 
@@ -68,13 +68,26 @@ public class ChiTietHoaDon implements Serializable{
 		return "ChiTietHoaDon [maHoaDon=" + maHoaDon + ", maSP=" + maSP + ", soLuong=" + soLuong + ", giaTien="
 				+ giaTien + ", thanhTien=" + thanhTien + "]";
 	}
+	public ChiTietHoaDon(HoaDon maHoaDon, SanPham maSP, int soLuong, double giaTien) {
+		super();
+		this.maHoaDon = maHoaDon;
+		this.maSP = maSP;
+		this.soLuong = soLuong;
+		this.giaTien = giaTien;
+		this.thanhTien = giaTien * soLuong;
+	}
+	
 	public ChiTietHoaDon(HoaDon maHoaDon, SanPham maSP, int soLuong, double giaTien, double thanhTien) {
 		super();
 		this.maHoaDon = maHoaDon;
 		this.maSP = maSP;
 		this.soLuong = soLuong;
 		this.giaTien = giaTien;
-		this.thanhTien = thanhTien;
+		this.thanhTien = giaTien * soLuong;
+	}
+	public ChiTietHoaDon(SanPham maSP, int soLuong) {
+		this.maSP = maSP;
+		this.soLuong = soLuong;
 	}
 	public ChiTietHoaDon() {
 		super();

@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 
 import dao.KhachHangDao;
 import entity.KhachHang;
@@ -296,6 +296,19 @@ public class KhachHangImpl extends UnicastRemoteObject implements KhachHangDao {
 		return null;
 	}
 
+	@Override
+	public KhachHang getKhachHangBySdt(String sdt) throws RemoteException {
+		em.clear();
+		return (KhachHang) em.createNativeQuery("select Top 1 * from KhachHang kh where kh.SDT = :x", KhachHang.class).setParameter("x", sdt)
+				.getSingleResult();
+	}
 
-
+	@Override
+	public KhachHang getKhachHangByMa(String ma) throws RemoteException {
+		em.clear();
+		return em.createQuery("select kh from KhachHang kh where kh.maKH = :x", KhachHang.class).setParameter("x", ma)
+				.getSingleResult();
+	}
+	
+	
 }
