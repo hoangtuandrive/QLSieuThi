@@ -1,6 +1,7 @@
 package app;
 
 import java.rmi.RemoteException;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -49,9 +50,9 @@ public class App {
 
 //		list.forEach(System.out::println);
 		
-		HoaDonDao hoadon_dao = new HoaDonImpl();
-		KhachHangDao khachhang_dao = new KhachHangImpl();
-		NhanVienDao nhanvien_dao = new NhanVienImpl();
+//		HoaDonDao hoadon_dao = new HoaDonImpl();
+//		KhachHangDao khachhang_dao = new KhachHangImpl();
+//		NhanVienDao nhanvien_dao = new NhanVienImpl();
 //		NhanVien nv = nhanvien_dao.getNhanVienById("NV1001");
 //		System.out.println(nv.toString());
 		
@@ -82,6 +83,8 @@ public class App {
 //			System.out.println(hd.getMaNV().getMaNV());
 //			list.add(hd);
 //		}
+		LocalTime date=java.time.LocalTime.now();
+		System.out.println(date.getNano());
 	}
 
 }

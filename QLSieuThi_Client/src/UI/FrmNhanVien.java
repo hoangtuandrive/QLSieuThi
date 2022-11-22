@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -612,10 +613,14 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 						if (listNV.size() == 0)
 							maNV = "NV1001";
 						else {
-							String maNVCuoi = listNV.get(listNV.size()-1).getMaNV().trim();
-							int layMaSo = Integer.parseInt(maNVCuoi.substring(2, maNVCuoi.length()));
-							System.out.println(maNVCuoi.substring(2,maNVCuoi.length()));
-							maNV = "NV" + (layMaSo + 1);
+							LocalTime ngay=java.time.LocalTime.now();
+//							String maNVCuoi = listNV.get(listNV.size()-1).getMaNV().trim();
+//							int layMaSo = Integer.parseInt(maNVCuoi.substring(2, maNVCuoi.length()));
+							int layMaSo=ngay.getNano();
+							String subt= "NV" + layMaSo;							
+							System.out.println(subt);
+//							maNV = "NV" + (layMaSo + 1);
+							maNV=subt.substring(0, 6);
 							try {
 								SortedSet<String> listMa = nhanvien_dao.getTatCaMaNhanVien();
 								if(listMa.contains(maNV)) {
