@@ -50,7 +50,7 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 	private JLabel lblMK;
 	private JLabel lblTDN;
 	private NhanVienDao nhanvien_dao;
-	public static String IP = "rmi://192.168.1.109:9999/";
+	public static String IP = "rmi://192.168.1.35:9999/";
 
 	public FrmDangNhap() {
 		FlatLightLaf.setup();
@@ -66,7 +66,7 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 
 		JPanel pTop = new JPanel();
 
-		JLabel lblTitle = new JLabel("ĐĂNG NHẬP");
+		JLabel lblTitle = new JLabel("Đăng Nhập");
 		lblTitle.setFont(new Font("serif", Font.BOLD, 25));
 		lblTitle.setForeground(Color.white);
 		pTop.add(lblTitle);
@@ -81,14 +81,14 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 		b2 = Box.createHorizontalBox();
 
 		txtTenDangNhap = new JTextField(20);
-		b1.add(lblTDN = new JLabel("Tên đăng nhập:"));
+		b1.add(lblTDN = new JLabel("Tên Đăng Nhập:"));
 		b1.add(Box.createHorizontalStrut(5));
 		b1.add(txtTenDangNhap);
 		b.add(b1);
 
 		b.add(Box.createVerticalStrut(20));
 		txtMatKhau = new JPasswordField(20);
-		b2.add(lblMK = new JLabel("Mật khẩu:"));
+		b2.add(lblMK = new JLabel("Mật Khẩu:"));
 		b2.add(Box.createHorizontalStrut(45));
 		b2.add(txtMatKhau);
 
@@ -99,7 +99,7 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 		p.add(pcenter, BorderLayout.CENTER);
 
 		JPanel pBot = new JPanel();
-		btnDangNhap = new JButton("Đăng nhập", new ImageIcon("image/trangchu.png"));
+		btnDangNhap = new JButton("Đăng Nhập", new ImageIcon("image/trangchu.png"));
 		btnThoat = new JButton("Thoát", new ImageIcon("image/out.png"));
 		pBot.add(Box.createHorizontalStrut(100));
 		pBot.add(btnDangNhap);
@@ -186,7 +186,7 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 		// TODO Auto-generated method stub
 		Object o = e.getSource();
 		if (o.equals(btnDangNhap)) {
-			// Kiểm tra lần đầu chạy
+			// Kiá»ƒm tra láº§n Ä‘áº§u cháº¡y
 			List<NhanVien> listNV;
 			try {
 				listNV = nhanvien_dao.getTatCaNhanVien();
@@ -225,7 +225,7 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 				e2.printStackTrace();
 			}
 			if (flag == 0) {
-				JOptionPane.showMessageDialog(this, "Đăng nhập thất bại!!!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "Ä�Äƒng nháº­p tháº¥t báº¡i!!!", "Lá»—i", JOptionPane.ERROR_MESSAGE);
 				txtTenDangNhap.requestFocus();
 				return;
 			} else {
@@ -271,7 +271,7 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 
 	public void createFirstAccount() throws RemoteException {
 		TaiKhoan t = new TaiKhoan("123", "123");
-		NhanVien nv = new NhanVien("QL1001", "Tuan A", true, "0929471420", "Quản Lý", 10000.00, "012345678",
+		NhanVien nv = new NhanVien("QL1001", "Tuan A", true, "0929471420", "Quáº£n LÃ½", 10000.00, "012345678",
 				new Date(2001 - 1900, 2 - 1, 28), "123 truong chinh", "hoangtuan@gmail.com", true, t);
 		t.setMaNV(nv);
 		nhanvien_dao.addNhanVien(nv);

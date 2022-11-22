@@ -583,7 +583,12 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener, 
 			}
 			tableKhachHang.getSelectionModel().clearSelection();
 			emptyTextField();
-//			FrmBanHang.docDuLieuVaoCmbSDT();
+			try {
+				FrmBanHang.docDuLieuVaoCmbSDT();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		}
 		if (o.equals(btnSua)) {
 			String maKH = txtMaKhachHang.getText();
@@ -617,7 +622,12 @@ public class FrmKhachHang extends javax.swing.JFrame implements ActionListener, 
 					e1.printStackTrace();
 				}
 				tableKhachHang.getSelectionModel().clearSelection();
-				// FrmBanHang.docDuLieuVaoCmbSDT();
+				 try {
+					FrmBanHang.docDuLieuVaoCmbSDT();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		}
 

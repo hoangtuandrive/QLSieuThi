@@ -32,7 +32,7 @@ public class ServerApp {
 			System.setProperty("java.security.policy", "policy/policy.policy");
 			System.setSecurityManager(new SecurityManager());
 		}
-		String IP = "rmi://192.168.1.109:9999/";
+		String IP = "rmi://192.168.1.35:9999/";
 		try {
 			LocateRegistry.createRegistry(9999);
 

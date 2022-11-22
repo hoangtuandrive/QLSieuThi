@@ -55,8 +55,8 @@ public class App {
 //		NhanVien nv = nhanvien_dao.getNhanVienById("NV1001");
 //		System.out.println(nv.toString());
 		
-		List<String> list = hoadon_dao.getTatCaTenNhanVien();
-		list.forEach(System.out::println);
+//		List<String> list = hoadon_dao.getTatCaTenNhanVien();
+//		list.forEach(System.out::println);
 		
 //		List<HoaDon> listHD = hoadon_dao.getTatCaHoaDonChuaTinhTien();
 //		for (HoaDon hd : listHD) {

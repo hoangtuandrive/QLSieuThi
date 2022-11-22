@@ -614,6 +614,7 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 						else {
 							String maNVCuoi = listNV.get(listNV.size()-1).getMaNV().trim();
 							int layMaSo = Integer.parseInt(maNVCuoi.substring(2, maNVCuoi.length()));
+							System.out.println(maNVCuoi.substring(2,maNVCuoi.length()));
 							maNV = "NV" + (layMaSo + 1);
 							try {
 								SortedSet<String> listMa = nhanvien_dao.getTatCaMaNhanVien();

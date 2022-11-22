@@ -618,8 +618,13 @@ public class FrmSanPham extends javax.swing.JFrame implements ActionListener, Mo
 			tableHangHoa.getSelectionModel().clearSelection();
 			emptyTextField();
 
-			// FrmBanHang.xoaHetDLSanPham();
-			// FrmBanHang.docDuLieuDatabaseVaoTableSanPham();
+			 FrmBanHang.xoaHetDLSanPham();
+			 try {
+				FrmBanHang.docDuLieuDatabaseVaoTableSanPham();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		}
 		if (o.equals(btnSua)) {
 			String masp = txtMaHangHoa.getText();
@@ -649,8 +654,13 @@ public class FrmSanPham extends javax.swing.JFrame implements ActionListener, Mo
 					e1.printStackTrace();
 				}
 				tableHangHoa.getSelectionModel().clearSelection();
-				// FrmBanHang.xoaHetDLSanPham();
-				// FrmBanHang.docDuLieuDatabaseVaoTableSanPham();
+				 FrmBanHang.xoaHetDLSanPham();
+				 try {
+					FrmBanHang.docDuLieuDatabaseVaoTableSanPham();
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		}
 		if (o.equals(btnXoa)) {
@@ -672,8 +682,13 @@ public class FrmSanPham extends javax.swing.JFrame implements ActionListener, Mo
 				e1.printStackTrace();
 			}
 			tableHangHoa.getSelectionModel().clearSelection();
-			// FrmBanHang.xoaHetDLSanPham();
-			// FrmBanHang.docDuLieuDatabaseVaoTableSanPham();
+			 FrmBanHang.xoaHetDLSanPham();
+			 try {
+				FrmBanHang.docDuLieuDatabaseVaoTableSanPham();
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		}
 		if (o.equals(cmbChon)) {
 			if (cmbChon.getSelectedIndex() == 0) {
