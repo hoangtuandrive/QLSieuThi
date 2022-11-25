@@ -50,7 +50,7 @@ import dao.SanPhamDao;
 import entity.ChiTietHoaDon;
 import entity.SanPham;
 
-public class FrmChiTietHoaDon extends JFrame {
+public class FrmChiTietHoaDon extends JFrame implements ActionListener {
 
 	private DefaultTableModel modelCTHD;
 	private JTable tblCTHD;
@@ -300,6 +300,8 @@ public class FrmChiTietHoaDon extends JFrame {
 		b2.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
 		b3.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
 		
+		btnIn.addActionListener(this);
+		
 		try {
 			cthd_dao = (ChiTietHoaDonDao) Naming.lookup(FrmDangNhap.IP + "chiTietHoaDonDao");
 			sanpham_dao = (SanPhamDao) Naming.lookup(FrmDangNhap.IP + "sanPhamDao");
@@ -336,11 +338,20 @@ public class FrmChiTietHoaDon extends JFrame {
 			txtThanhTien.setText("0.0 VNĐ");
 		else
 			txtThanhTien.setText(df.format(thanhTien) + " VNĐ");
+		
 	}
 
 	public static void main(String[] args) throws RemoteException {
 		// TODO Auto-generated method stub
 		new FrmDangNhap().setVisible(true);
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		Object o = e.getSource();
+		if (o.equals(btnIn)) {
+			JOptionPane.showMessageDialog(this, "In hoá đơn thành công");
+		}
 	}
 
 

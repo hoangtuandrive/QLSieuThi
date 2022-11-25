@@ -270,8 +270,10 @@ public class FrmHoaDon extends JFrame implements ActionListener, MouseListener {
 				model.setRowCount(0);
 				DecimalFormat df = new DecimalFormat("#,##0");
 				SimpleDateFormat date = new SimpleDateFormat("yyy-MM-dd");
+				DecimalFormat money = new DecimalFormat("#,##0");
+				double tongDoanhThu = 0;
 				if (cmbTim.getSelectedIndex() == 0) {
-					docDuLieuDatabaseVaoTable();
+					tongDoanhThu = docDuLieuDatabaseVaoTable();
 				} else if (cmbChon.getSelectedIndex() == 0) {
 					String tim = cmbTim.getSelectedItem().toString().trim();
 					List<HoaDon> list = hoadon_dao.getTatCaHoaDonDaThanhToan();
@@ -281,7 +283,7 @@ public class FrmHoaDon extends JFrame implements ActionListener, MouseListener {
 							NhanVien nv = nhanvien_dao.getNhanVienById(hd.getMaNV().getMaNV().trim());
 							modelHoaDon.addRow(new Object[] { hd.getMaHD(), kh.getTenKH().trim(), nv.getTenNV().trim(),
 									date.format(hd.getNgayLapHoaDon()), df.format(hd.getTongTien()) });
-
+							tongDoanhThu += hd.getTongTien();
 						}
 					}
 				} else if (cmbChon.getSelectedIndex() == 1) {
@@ -293,6 +295,7 @@ public class FrmHoaDon extends JFrame implements ActionListener, MouseListener {
 							NhanVien nv = nhanvien_dao.getNhanVienById(hd.getMaNV().getMaNV().trim());
 							modelHoaDon.addRow(new Object[] { hd.getMaHD(), kh.getTenKH().trim(), nv.getTenNV().trim(),
 									date.format(hd.getNgayLapHoaDon()), df.format(hd.getTongTien()) });
+							tongDoanhThu += hd.getTongTien();
 						}
 					}
 				} else if (cmbChon.getSelectedIndex() == 2) {
@@ -304,6 +307,7 @@ public class FrmHoaDon extends JFrame implements ActionListener, MouseListener {
 							KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH().trim());
 							modelHoaDon.addRow(new Object[] { hd.getMaHD(), kh.getTenKH().trim(), nv.getTenNV().trim(),
 									date.format(hd.getNgayLapHoaDon()), df.format(hd.getTongTien()) });
+							tongDoanhThu += hd.getTongTien();
 						}
 					}
 				} else if (cmbChon.getSelectedIndex() == 3) {
@@ -318,6 +322,7 @@ public class FrmHoaDon extends JFrame implements ActionListener, MouseListener {
 							NhanVien nv = nhanvien_dao.getNhanVienById(hd.getMaNV().getMaNV().trim());
 							modelHoaDon.addRow(new Object[] { hd.getMaHD(), kh.getTenKH().trim(), nv.getTenNV().trim(),
 									date.format(hd.getNgayLapHoaDon()), df.format(hd.getTongTien()) });
+							tongDoanhThu += hd.getTongTien();
 						}
 					}
 				} else if (cmbChon.getSelectedIndex() == 4) {
@@ -330,10 +335,16 @@ public class FrmHoaDon extends JFrame implements ActionListener, MouseListener {
 							NhanVien nv = nhanvien_dao.getNhanVienById(hd.getMaNV().getMaNV().trim());
 							modelHoaDon.addRow(new Object[] { hd.getMaHD(), kh.getTenKH().trim(), nv.getTenNV().trim(),
 									date.format(hd.getNgayLapHoaDon()), df.format(hd.getTongTien()) });
+							tongDoanhThu += hd.getTongTien();
 						}
 					}
 				}
-
+				
+				
+				if (tongDoanhThu == 0)
+					txtDoanhThu.setText("0.0 VNĐ");
+				else
+					txtDoanhThu.setText(money.format(tongDoanhThu) + " VNĐ");
 			}
 			if (o.equals(btnTim1)) {
 				DefaultTableModel dm = (DefaultTableModel) tableHoaDon.getModel();
@@ -456,7 +467,7 @@ public class FrmHoaDon extends JFrame implements ActionListener, MouseListener {
 		}
 	}
 
-	public static void docDuLieuDatabaseVaoTable() throws RemoteException {
+	public static double docDuLieuDatabaseVaoTable() throws RemoteException {
 		DefaultTableModel dm = (DefaultTableModel) tableHoaDon.getModel();
 		dm.setRowCount(0);
 		List<HoaDon> list = hoadon_dao.getTatCaHoaDonDaThanhToan();
@@ -474,6 +485,7 @@ public class FrmHoaDon extends JFrame implements ActionListener, MouseListener {
 			txtDoanhThu.setText("0.0 VNĐ");
 		else
 			txtDoanhThu.setText(df.format(tongDoanhThu) + " VNĐ");
+		return tongDoanhThu;
 	}
 
 	public static void docMaHoaDonVaoCmbTim() throws RemoteException {

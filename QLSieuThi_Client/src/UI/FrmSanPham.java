@@ -503,7 +503,7 @@ public class FrmSanPham extends javax.swing.JFrame implements ActionListener, Mo
 		if (soLuong.trim().length() > 0) {
 			try {
 				int x = Integer.parseInt(soLuong);
-				if (x <= 0) {
+				if (x < 0) {
 					JOptionPane.showMessageDialog(this, "Số lượng phải lớn hơn 0", "Lỗi", JOptionPane.ERROR_MESSAGE);
 					return false;
 				}

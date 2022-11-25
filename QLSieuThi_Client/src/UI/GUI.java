@@ -198,7 +198,7 @@ public class GUI extends JFrame implements ActionListener, MouseListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NotBoundException e) {
-			// TODO Auto-generated catch block
+			// TODO Auto-generated catch blockX
 			e.printStackTrace();
 		}
 		

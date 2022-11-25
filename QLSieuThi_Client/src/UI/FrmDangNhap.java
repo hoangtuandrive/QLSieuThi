@@ -50,7 +50,7 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 	private JLabel lblMK;
 	private JLabel lblTDN;
 	private NhanVienDao nhanvien_dao;
-	public static String IP = "rmi://192.168.1.35:9999/";
+	public static String IP = "rmi://192.168.1.109:9999/";
 
 	public FrmDangNhap() {
 		FlatLightLaf.setup();
@@ -225,7 +225,7 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 				e2.printStackTrace();
 			}
 			if (flag == 0) {
-				JOptionPane.showMessageDialog(this, "Ä�Äƒng nháº­p tháº¥t báº¡i!!!", "Lá»—i", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "Đăng Nhập Thất Bại!!!", "Lỗi", JOptionPane.ERROR_MESSAGE);
 				txtTenDangNhap.requestFocus();
 				return;
 			} else {
@@ -271,7 +271,7 @@ public class FrmDangNhap extends JFrame implements ActionListener, KeyListener {
 
 	public void createFirstAccount() throws RemoteException {
 		TaiKhoan t = new TaiKhoan("123", "123");
-		NhanVien nv = new NhanVien("QL1001", "Tuan A", true, "0929471420", "Quáº£n LÃ½", 10000.00, "012345678",
+		NhanVien nv = new NhanVien("QL1001", "Tuan A", true, "0929471420", "Quản Lý", 10000.00, "012345678",
 				new Date(2001 - 1900, 2 - 1, 28), "123 truong chinh", "hoangtuan@gmail.com", true, t);
 		t.setMaNV(nv);
 		nhanvien_dao.addNhanVien(nv);

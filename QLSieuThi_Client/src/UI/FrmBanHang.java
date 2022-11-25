@@ -496,6 +496,14 @@ public class FrmBanHang extends JFrame implements ActionListener {
 						txtDiaChi.setText(kh.getDiaChi().trim());
 						txtMaKhachHang.setText(kh.getMaKH().trim());
 						btnTaoGioHang.setEnabled(true);
+						
+						txtTenKhachHang.setEditable(false);
+						txtCMND.setEditable(false);
+						txtDiaChi.setEditable(false);
+						txtEmail.setEditable(false);
+						cmbGioiTinh.setEnabled(false);
+						txtNgaySinh.setEnabled(false);
+						
 					}
 				} else {
 					JOptionPane.showMessageDialog(this, "Đây là khách hàng mới. Welcome to our store!!!");
@@ -591,7 +599,13 @@ public class FrmBanHang extends JFrame implements ActionListener {
 
 					FrmKhachHang.xoaHetDL();
 					FrmKhachHang.docDuLieuDatabaseVaoTable();
-					btnTaoGioHang.setEnabled(false);
+					txtTenKhachHang.setEditable(true);
+					txtCMND.setEditable(true);
+					txtDiaChi.setEditable(true);
+					txtEmail.setEditable(true);
+					cmbGioiTinh.setEnabled(true);
+					txtNgaySinh.setEnabled(true);
+					
 				}
 			}
 			if (o.equals(cmbGioHang)) {
@@ -835,6 +849,7 @@ public class FrmBanHang extends JFrame implements ActionListener {
 						cmbGioHang.removeAllItems();
 						docDuLieuVaoCmbGioHang();
 						xoaThongTinTrenTextField();
+						xoaHetDLGioHang();
 						FrmHoaDon.docDuLieuDatabaseVaoTable();
 						KhachHang kh = khachhang_dao.getKhachHangByMa(hd.getMaKH().getMaKH());
 						new FrmChiTietHoaDon(kh.getTenKH(), nv.getTenNV(), hd.getMaHD(), date)

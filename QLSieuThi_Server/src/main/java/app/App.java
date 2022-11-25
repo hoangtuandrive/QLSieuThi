@@ -50,14 +50,14 @@ public class App {
 
 //		list.forEach(System.out::println);
 		
-//		HoaDonDao hoadon_dao = new HoaDonImpl();
+		HoaDonDao hoadon_dao = new HoaDonImpl();
 //		KhachHangDao khachhang_dao = new KhachHangImpl();
 //		NhanVienDao nhanvien_dao = new NhanVienImpl();
 //		NhanVien nv = nhanvien_dao.getNhanVienById("NV1001");
 //		System.out.println(nv.toString());
 		
-//		List<String> list = hoadon_dao.getTatCaTenNhanVien();
-//		list.forEach(System.out::println);
+		SortedSet<String> list = hoadon_dao.getTatCaTenNhanVien();
+		list.forEach(System.out::println);
 		
 //		List<HoaDon> listHD = hoadon_dao.getTatCaHoaDonChuaTinhTien();
 //		for (HoaDon hd : listHD) {
@@ -83,8 +83,8 @@ public class App {
 //			System.out.println(hd.getMaNV().getMaNV());
 //			list.add(hd);
 //		}
-		LocalTime date=java.time.LocalTime.now();
-		System.out.println(date.getNano());
+//		LocalTime date=java.time.LocalTime.now();
+//		System.out.println(date.getNano());
 	}
 
 }

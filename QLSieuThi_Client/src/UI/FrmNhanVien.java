@@ -649,7 +649,6 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 							e3.printStackTrace();
 						}
 					}
-					System.out.println(maNV);
 					TaiKhoan tk = new TaiKhoan(maNV, "123");
 					NhanVien nv = new NhanVien(maNV, tenNV, gioiTinh == "Nam" ? true : false, SDT, chucVu, luong, CMND,
 							date, diaChi, email, true, tk);
@@ -663,12 +662,12 @@ public class FrmNhanVien extends javax.swing.JFrame implements ActionListener, M
 						e1.printStackTrace();
 						JOptionPane.showMessageDialog(null, "Thất Bại");
 					}
-					try {
-						tk_dao.create(tk);
-					} catch (RemoteException e2) {
-						// TODO Auto-generated catch block
-						e2.printStackTrace();
-					}
+//					try {
+//						tk_dao.create(tk);
+//					} catch (RemoteException e2) {
+//						// TODO Auto-generated catch block
+//						e2.printStackTrace();
+//					}
 
 					xoaHetDL();
 					try {
